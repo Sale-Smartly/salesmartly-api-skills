@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![API Coverage](https://img.shields.io/badge/API%20Coverage-100%25-green.svg)](https://salesmartly-api.apifox.cn/llms.txt)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](CHANGELOG.md)
 
 一套专为 **OpenClaw AI 助手** 设计的 SalesSmartly API 自动化系统，支持客户管理、会话管理、WhatsApp 集成等全功能，并可根据 API 文档自动生成脚本。
 
@@ -50,6 +51,10 @@ salesmartly-agent/
 │   ├── delete-whatsapp-device.py  # 删除 WhatsApp 设备
 │   ├── get-whatsapp-qrcode.py  # 获取登录二维码
 │   └── set-whatsapp-proxy.py   # 设置设备代理
+│   
+│   # 数据分析脚本 🆕
+│   ├── daily-sales-report.py   # 每日销售报告
+│   └── customer-stats.py       # 客户统计分析
 │   
 │   # 脚本生成器
 │   ├── generate-query-script.py     # 单个 API 生成器
