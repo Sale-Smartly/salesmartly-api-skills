@@ -1,9 +1,0 @@
-# GitHub Personal Access Token
-# ⚠️ 此文件应设置为 600 权限，仅所有者可读
-
-GITHUB_TOKEN=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
-GITHUB_USER=Binzaga
-GITHUB_REPO=Sale-Smartly/salesmartly-api-skills
-
-# ⚠️ 重要：此 Token 已在对话中暴露，建议重新生成！
-# 生成新 Token 后更新此文件，并删除旧的 Token
