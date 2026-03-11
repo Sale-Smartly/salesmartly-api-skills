@@ -349,9 +349,7 @@ sign = hashlib.md5(sign_str.encode()).hexdigest()
 
 **Telegram**: [@shamy_ssd](https://t.me/shamy_ssd)
 
-扫码添加：
-
-![Telegram QR Code](assets/telegram-qr.png)
+👉 点击链接直接聊天：https://t.me/shamy_ssd
 
 欢迎随时联系，一起让 SalesSmartly 更好用！🚀
 
