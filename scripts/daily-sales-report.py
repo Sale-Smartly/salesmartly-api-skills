@@ -15,17 +15,25 @@ uv run scripts/daily-sales-report.py --days 7  # 最近 7 天
 
 import json
 import sys
-import requests
+import urllib.request
+import urllib.parse
+import ssl
 from datetime import datetime, timedelta
 from pathlib import Path
 
 # 加载 API 配置
-SCRIPT_DIR = Path(__file__).parent
+SCRIPT_DIR = Path(__file__).parent.absolute()
 API_CONFIG = SCRIPT_DIR / "api-key.json"
 
 if not API_CONFIG.exists():
+    # 尝试工作目录
+    API_CONFIG = Path("api-key.json")
+    
+if not API_CONFIG.exists():
     print("❌ 错误：api-key.json 不存在")
     print("请先配置 API Key")
+    print(f"当前目录：{Path.cwd()}")
+    print(f"脚本目录：{SCRIPT_DIR}")
     sys.exit(1)
 
 with open(API_CONFIG, 'r') as f:
@@ -51,12 +59,29 @@ def api_request(endpoint, params=None):
         params = {}
     
     params["project_id"] = PROJECT_ID
-    params["sign"] = get_sign(params)
+    sign = get_sign(params)
+    
+    # 构建查询字符串（不包含 sign）
+    query_params = dict(params)
+    query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
+    url = f"{BASE_URL}{endpoint}?{query_string}"
     
     try:
-        response = requests.get(f"{BASE_URL}{endpoint}", params=params, verify=False)
-        response.raise_for_status()
-        return response.json()
+        # 创建 SSL 上下文（跳过证书验证）
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # 添加 External-Sign header（sign 只在 header 里）
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "SalesSmartly-Agent/1.0",
+            "External-Sign": sign
+        }
+        
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+            return json.loads(response.read().decode())
     except Exception as e:
         print(f"❌ API 请求失败：{e}")
         return None
@@ -64,13 +89,16 @@ def api_request(endpoint, params=None):
 def get_customer_count(days=1):
     """获取客户数量统计"""
     # 计算时间范围
-    end_time = datetime.now()
-    start_time = end_time - timedelta(days=days)
+    end_time = int(datetime.now().timestamp())
+    start_time = int((datetime.now() - timedelta(days=days)).timestamp())
+    
+    import json
+    updated_time_str = json.dumps({"start": start_time, "end": end_time}, separators=(',', ':'))
     
     params = {
         "page": "1",
         "page_size": "1",
-        "updated_time": str(int(start_time.timestamp()))
+        "updated_time": updated_time_str
     }
     
     result = api_request("/api/v2/get-contact-list", params)
