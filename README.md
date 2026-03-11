@@ -132,6 +132,13 @@ python scripts/query-customers.py --page 1 --page-size 5
 | `batch-tags.py` | 批量操作标签 | `uv run scripts/batch-tags.py --chat-user-ids <ID1>,<ID2> --tag-ids <TAG_ID>` |
 | `import-orders.py` | 导入客户订单 | `uv run scripts/import-orders.py --orders '<JSON>'` |
 
+### 数据分析 🆕
+
+| 脚本 | 功能 | 示例 |
+|------|------|------|
+| `daily-sales-report.py` | 每日销售报告 | `uv run scripts/daily-sales-report.py` |
+| `customer-stats.py` | 客户统计分析 | `uv run scripts/customer-stats.py --days 30` |
+
 **示例输出**:
 ```
 $ uv run scripts/query-customers.py --page 1 --page-size 3
