@@ -334,6 +334,29 @@ sign = hashlib.md5(sign_str.encode()).hexdigest()
 
 ---
 
+## 🤝 与 SalesSmartly 共创
+
+本项目希望与 **SalesSmartly 官方** 及 **广大用户** 共创，打造更好用的自动化工具！
+
+### 📬 如果你有：
+
+- 💡 **功能需求** - 需要某个自动化脚本但不会写
+-  **优秀脚本** - 自己开发了好用的脚本想分享
+- 🐛 **Bug 反馈** - 发现问题需要修复
+- 🔧 **改进建议** - 想让某个功能更好用
+
+### 📱 联系方式
+
+**Telegram**: [@shamy_ssd](https://t.me/shamy_ssd)
+
+扫码添加：
+
+![Telegram QR Code](assets/telegram-qr.png)
+
+欢迎随时联系，一起让 SalesSmartly 更好用！🚀
+
+---
+
 ## 📝 更新日志
 
 详见 [CHANGELOG.md](CHANGELOG.md)
