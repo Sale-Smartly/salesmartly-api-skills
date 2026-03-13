@@ -24,7 +24,7 @@
 ## 📦 项目结构
 
 ```
-salesmartly-agent/
+salesmartly-api-skills/
 ├── LICENSE                     # MIT 开源协议
 ├── README.md                   # 使用说明
 ├── requirements.txt            # Python 依赖
@@ -77,8 +77,8 @@ salesmartly-agent/
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # 2. 克隆项目
-git clone https://github.com/YOUR_USERNAME/salesmartly-agent.git
-cd salesmartly-agent
+git clone https://github.com/Sale-Smartly/salesmartly-api-skills.git
+cd salesmartly-api-skills
 
 # 3. 配置 API Key
 cat > api-key.json << 'EOF'
@@ -105,13 +105,23 @@ pip install -r requirements.txt
 python scripts/query-customers.py --page 1 --page-size 5
 ```
 
-### 方式 3: 在 OpenClaw 中使用
+### 方式 3: 通过 OpenClaw 对话安装（最简单 🌟）
 
-如果你使用 OpenClaw AI 助手：
+如果你使用 OpenClaw AI 助手，直接对话即可：
 
-1. 将 `salesmartly-agent/` 文件夹放到 OpenClaw workspace 的 `skills/` 目录下
-2. 配置 `api-key.json`
-3. 对 AI 说："查询最近 7 天的客户"
+```
+帮我安装 salesmartly-api-skills 技能
+```
+
+AI 会自动：
+1. 从 GitHub 克隆项目
+2. 安装到 `skills/salesmartly-api-skills/` 目录
+3. 告诉你配置 API Key 的方法
+
+配置完成后，直接对 AI 说：
+- "查询最近 7 天的客户"
+- "分析昨天的销售数据"
+- "查看 WhatsApp 设备状态"
 
 ---
 
@@ -431,6 +441,6 @@ uv run scripts/query-link-records.py --link-id <链接 ID>
 
 **Made with ❤️ for SaleSmartly Users**
 
-[⭐ Star this repo](https://github.com/YOUR_USERNAME/salesmartly-agent) if you find it useful!
+[⭐ Star this repo](https://github.com/Sale-Smartly/salesmartly-api-skills) if you find it useful!
 
 </div>
