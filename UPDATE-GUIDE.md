@@ -1,4 +1,4 @@
-# SalesSmartly API 脚本更新指南
+# SaleSmartly API 脚本更新指南
 
 ## 🚀 快速更新（推荐）
 
@@ -57,7 +57,7 @@ mv scripts/query-__*.py scripts/create-customer.py
 ### 方式 1：直接命令
 
 ```
-帮我更新 SalesSmartly API 脚本
+帮我更新 SaleSmartly API 脚本
 ```
 
 我会：
@@ -69,7 +69,7 @@ mv scripts/query-__*.py scripts/create-customer.py
 ### 方式 2：指定 API
 
 ```
-帮我生成 SalesSmartly 新增客户的脚本
+帮我生成 SaleSmartly 新增客户的脚本
 ```
 
 我会：
@@ -80,7 +80,7 @@ mv scripts/query-__*.py scripts/create-customer.py
 ### 方式 3：检查更新
 
 ```
-检查 SalesSmartly API 是否有更新
+检查 SaleSmartly API 是否有更新
 ```
 
 我会：

@@ -1,8 +1,8 @@
 # 共创说明
 
-## 🤝 与 SalesSmartly 官方共创
+## 🤝 与 SaleSmartly 官方共创
 
-本项目希望与 SalesSmartly 官方团队合作，共同完善 API 自动化生态。
+本项目希望与 SaleSmartly 官方团队合作，共同完善 API 自动化生态。
 
 ### 官方合作
 
@@ -13,7 +13,7 @@
 
 ### 用户贡献
 
-欢迎 SalesSmartly 用户贡献：
+欢迎 SaleSmartly 用户贡献：
 
 1. **提交需求** - 需要什么功能的脚本
 2. **分享脚本** - 自己开发的好用脚本
@@ -31,6 +31,6 @@
 
 <div align="center">
 
-**一起让 SalesSmartly 更好用！** 🚀
+**一起让 SaleSmartly 更好用！** 🚀
 
 </div>

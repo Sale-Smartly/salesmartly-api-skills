@@ -1,13 +1,13 @@
-# SalesSmartly AI Skill
+# SaleSmartly AI Skill
 
-> 🤖 SalesSmartly 全功能 API 自动化脚本系统 | 17 个 API 端点 | 支持自动生成脚本
+> 🤖 SaleSmartly 全功能 API 自动化脚本系统 | 17 个 API 端点 | 支持自动生成脚本
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![API Coverage](https://img.shields.io/badge/API%20Coverage-100%25-green.svg)](https://salesmartly-api.apifox.cn/llms.txt)
 [![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](CHANGELOG.md)
 
-一套专为 **OpenClaw AI 助手** 设计的 SalesSmartly API 自动化系统，支持客户管理、会话管理、WhatsApp 集成等全功能，并可根据 API 文档自动生成脚本。
+一套专为 **OpenClaw AI 助手** 设计的 SaleSmartly API 自动化系统，支持客户管理、会话管理、WhatsApp 集成等全功能，并可根据 API 文档自动生成脚本。
 
 ---
 
@@ -117,7 +117,7 @@ python scripts/query-customers.py --page 1 --page-size 5
 
 ## 🔑 获取 API Key
 
-1. 登录 [SalesSmartly 后台](https://www.salesmartly.com/)
+1. 登录 [SaleSmartly 后台](https://www.salesmartly.com/)
 2. 进入 **设置** → **API 集成**
 3. 点击 **创建 API Key**
 4. 复制 **API Key** 和 **Project ID**
@@ -243,7 +243,7 @@ $ uv run scripts/query-whatsapp-apps.py --page-size 3
 
 ## 🤖 自动生成脚本
 
-项目支持从 SalesSmartly API 文档自动生成脚本，无需手写！
+项目支持从 SaleSmartly API 文档自动生成脚本，无需手写！
 
 ### 批量生成所有 API 脚本
 
@@ -269,7 +269,7 @@ uv run scripts/check-api-updates.py
 
 ## 🔐 API 签名规则
 
-SalesSmartly API 使用 MD5 签名：
+SaleSmartly API 使用 MD5 签名：
 
 ```python
 import hashlib
@@ -325,7 +325,7 @@ sign = hashlib.md5(sign_str.encode()).hexdigest()
 
 ## 📖 相关文档
 
-- [SalesSmartly 官网](https://www.salesmartly.com/)
+- [SaleSmartly 官网](https://www.salesmartly.com/)
 - [API 文档](https://salesmartly-api.apifox.cn/llms.txt)
 - [签名规则](https://help.salesmartly.com/docs/API-Header)
 - [OpenClaw 文档](https://docs.openclaw.ai)
@@ -346,9 +346,9 @@ sign = hashlib.md5(sign_str.encode()).hexdigest()
 
 ---
 
-## 🤝 与 SalesSmartly 共创
+## 🤝 与 SaleSmartly 共创
 
-本项目希望与 **SalesSmartly 官方** 及 **广大用户** 共创，打造更好用的自动化工具！
+本项目希望与 **SaleSmartly 官方** 及 **广大用户** 共创，打造更好用的自动化工具！
 
 ### 📬 如果你有：
 
@@ -363,7 +363,7 @@ sign = hashlib.md5(sign_str.encode()).hexdigest()
 
 👉 点击链接直接聊天：https://t.me/shamy_ssd
 
-欢迎随时联系，一起让 SalesSmartly 更好用！🚀
+欢迎随时联系，一起让 SaleSmartly 更好用！🚀
 
 ---
 
@@ -423,13 +423,13 @@ uv run scripts/query-link-records.py --link-id <链接 ID>
 
 ## 🌟 致谢
 
-感谢 SalesSmartly 提供强大的 API 支持！
+感谢 SaleSmartly 提供强大的 API 支持！
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for SalesSmartly Users**
+**Made with ❤️ for SaleSmartly Users**
 
 [⭐ Star this repo](https://github.com/YOUR_USERNAME/salesmartly-agent) if you find it useful!
 

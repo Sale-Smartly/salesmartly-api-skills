@@ -1,11 +1,11 @@
 ---
 name: salesmartly-api
-description: SalesSmartly 全功能 API 技能。支持客户管理、团队管理、会话管理、营销管理、WhatsApp 集成。可根据 API 文档自动生成脚本。
+description: SaleSmartly 全功能 API 技能。支持客户管理、团队管理、会话管理、营销管理、WhatsApp 集成。可根据 API 文档自动生成脚本。
 ---
 
-# SalesSmartly API 技能
+# SaleSmartly API 技能
 
-> 提供 SalesSmartly 全功能 API 查询与管理能力，支持自动脚本生成
+> 提供 SaleSmartly 全功能 API 查询与管理能力，支持自动脚本生成
 
 ## 核心能力
 

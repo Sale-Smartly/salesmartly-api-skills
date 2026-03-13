@@ -56,7 +56,7 @@ git tag -a v1.0.0 -m "Release v1.0.0 - 初始版本"
 ```
 1. 访问 https://github.com/new
 2. 仓库名：salesmartly-agent
-3. 描述：SalesSmartly 全功能 API 自动化脚本系统
+3. 描述：SaleSmartly 全功能 API 自动化脚本系统
 4. 选择：Public
 5. 不要初始化（我们已经本地初始化了）
 6. 点击 Create repository
@@ -104,7 +104,7 @@ git push origin --tags
 
 ### 1. 分享到社区
 - [ ] OpenClaw Discord 社区
-- [ ] SalesSmartly 用户群
+- [ ] SaleSmartly 用户群
 - [ ] 相关技术论坛
 - [ ] 朋友圈/微博
 

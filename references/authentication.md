@@ -1,4 +1,4 @@
-# SalesSmartly API 认证说明
+# SaleSmartly API 认证说明
 
 ## 🔐 签名规则
 
@@ -51,7 +51,7 @@ MD5 签名：9e6c081465718670b907e544ad1ec98b
 GET /api/v2/get-contact-list?project_id=f9m526&updated_time=...&page=1&page_size=5 HTTP/1.1
 Host: developer.salesmartly.com
 Content-Type: application/json
-User-Agent: SalesSmartly-Agent/1.0
+User-Agent: SaleSmartly-Agent/1.0
 External-Sign: 9e6c081465718670b907e544ad1ec98b
 ```
 

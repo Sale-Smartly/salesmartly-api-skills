@@ -1,4 +1,4 @@
-# 🎉 SalesSmartly AI Skill - GitHub 发布准备完成！
+# 🎉 SaleSmartly AI Skill - GitHub 发布准备完成！
 
 ## ✅ 已完成的工作
 
@@ -38,7 +38,7 @@
 
 ```
 仓库名：salesmartly-agent
-描述：SalesSmartly 全功能 API 自动化脚本系统 | 17 个 API 端点 | 支持自动生成脚本
+描述：SaleSmartly 全功能 API 自动化脚本系统 | 17 个 API 端点 | 支持自动生成脚本
 可见性：Public（公开）
 ❌ 不要勾选 "Add a README file"
 ❌ 不要勾选 "Add .gitignore"
@@ -111,9 +111,9 @@ uv run scripts/query-customers.py --help
 
 1. **OpenClaw 社区**
    - Discord: https://discord.com/invite/clawd
-   - 分享你的 SalesSmartly + OpenClaw 实践
+   - 分享你的 SaleSmartly + OpenClaw 实践
 
-2. **SalesSmartly 用户群**
+2. **SaleSmartly 用户群**
    - 微信群/QQ 群
    - 分享自动化脚本提效经验
 
@@ -127,7 +127,7 @@ uv run scripts/query-customers.py --help
 ```
 🎉 开源项目发布！
 
-给 SalesSmartly 用户做了个自动化工具包：
+给 SaleSmartly 用户做了个自动化工具包：
 - 17 个 API 端点全部实现
 - 支持自动生成脚本
 - 完整中文文档
@@ -170,7 +170,7 @@ GitHub: https://github.com/YOUR_USERNAME/salesmartly-agent
 
 ## 🎊 恭喜！
 
-你的 SalesSmartly AI Skill 已经准备好发布了！
+你的 SaleSmartly AI Skill 已经准备好发布了！
 
 **记住**：开源不只是代码，更是社区。及时回复 Issues，保持文档更新，你会收获更多！
 

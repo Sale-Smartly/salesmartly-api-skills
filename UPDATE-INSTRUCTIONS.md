@@ -1,11 +1,11 @@
-# SalesSmartly API 脚本更新指南
+# SaleSmartly API 脚本更新指南
 
 ## 🚀 快速更新命令
 
 ### 方式 1：直接对我说（推荐）
 
 ```
-帮我更新 SalesSmartly API 脚本
+帮我更新 SaleSmartly API 脚本
 ```
 
 我会自动：
@@ -24,7 +24,7 @@ uv run scripts/check-api-updates.py
 **输出示例：**
 ```
 ======================================================================
-📊 SalesSmartly API 脚本更新检查
+📊 SaleSmartly API 脚本更新检查
 ======================================================================
 
 📄 获取最新 API 列表...
@@ -112,7 +112,7 @@ uv run scripts/generate-query-script.py --api-id 276530997e0
 
 ## 🔍 更新场景
 
-### 场景 1：SalesSmartly 新增 API
+### 场景 1：SaleSmartly 新增 API
 
 **步骤：**
 1. 运行检查：`uv run scripts/check-api-updates.py`
@@ -153,14 +153,14 @@ uv run scripts/check-api-updates.py
 
 ```
 # 检查更新
-检查 SalesSmartly API 是否有更新
+检查 SaleSmartly API 是否有更新
 
 # 生成缺失脚本
-生成 SalesSmartly 缺失的 API 脚本
+生成 SaleSmartly 缺失的 API 脚本
 
 # 生成单个脚本
-帮我生成 SalesSmartly 新增客户的脚本
+帮我生成 SaleSmartly 新增客户的脚本
 
 # 重新生成
-重新生成 SalesSmartly 更新客户资料的脚本
+重新生成 SaleSmartly 更新客户资料的脚本
 ```
