@@ -1,0 +1,9 @@
+{
+  "salesmartly": {
+    "apiKey": "你的 SaleSmartly API Token",
+    "projectId": "你的项目 ID"
+  },
+  "dingtalk": {
+    "webhook": "https://oapi.dingtalk.com/robot/send?access_token=你的钉钉机器人 Token"
+  }
+}

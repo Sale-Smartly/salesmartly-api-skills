@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# API Key (重要！不要提交)
+api-key.json
+api-key-temp.json
+*.key
+*.secret
+
+# 测试相关文件 (不提交)
+test-log.json
+question-bank.json
+test-report*.md
+logs/
+
+# 临时文件
+*.tmp
+*.log
+*.png
+*.bak
+*.swp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 内部文档 (不发布到 GitHub)
+PUBLISH-GUIDE.md
+UPDATE-GUIDE.md
+UPDATE-INSTRUCTIONS.md
+RELEASE-CHECKLIST.md
+CO-CREATION.md
+DEPRECATED.md
+ID-FIELDS-GUIDE.md
+
+# 开发工具
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# uv
+uv.lock
