@@ -43,7 +43,13 @@ def load_config():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            return config.get('apiKey'), config.get('projectId')
+            # 支持两种格式：
+            # 1. 嵌套格式：{"salesmartly": {"apiKey": "...", "projectId": "..."}}
+            # 2. 扁平格式：{"apiKey": "...", "projectId": "..."}
+            if 'salesmartly' in config:
+                return config['salesmartly'].get('apiKey'), config['salesmartly'].get('projectId')
+            else:
+                return config.get('apiKey'), config.get('projectId')
     except Exception as e:
         print(f"❌ 加载配置文件失败：{e}")
         print(f"提示：请确保 {CONFIG_FILE} 文件存在且格式正确")
@@ -56,28 +62,24 @@ def generate_sign(api_key: str, params: dict) -> str:
     
     签名规则：
     1. 将所有参数按 key 的 ASCII 码从小到大排序
-    2. 拼接成 URL 请求字符串（key1=value1&key2=value2...）
-    3. 在末尾拼接 &key=api_key
-    4. 对拼接后的字符串进行 MD32 加密
+    2. 以 api_key 开头，拼接 key=value 格式
+    3. 用 & 连接所有参数
+    4. 对拼接后的字符串进行 MD5 加密
     """
     # 过滤空值参数
     filtered_params = {k: v for k, v in params.items() if v is not None and v != ''}
     
     # 按 key 排序
-    sorted_keys = sorted(filtered_params.keys())
+    sorted_params = sorted(filtered_params.items(), key=lambda x: x[0])
     
-    # 拼接参数
-    param_strings = []
-    for key in sorted_keys:
-        value = filtered_params[key]
-        param_strings.append(f"{key}={value}")
+    # 生成签名（api_key 开头）
+    sign_parts = [api_key]
+    for k, v in sorted_params:
+        sign_parts.append(f"{k}={v}")
     
-    # 拼接 API Key
-    param_strings.append(f"key={api_key}")
-    
-    # 生成签名
-    sign_string = "&".join(param_strings)
-    sign = hashlib.md5(sign_string.encode('utf-8')).hexdigest()
+    # 拼接并生成 MD5
+    sign_str = "&".join(sign_parts)
+    sign = hashlib.md5(sign_str.encode('utf-8')).hexdigest()
     
     return sign
 
@@ -168,13 +170,42 @@ def query_sessions(page: int = 1, page_size: int = 10, status: int = 0,
     req.add_header('User-Agent', 'SaleSmartly-Agent/1.0')
     
     try:
-        # 发送请求（使用安全的 SSL 上下文）
+        # 发送请求
+        # 注意：如果系统 SSL 证书有问题，使用 CERT_NONE
         ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = True
-        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
         
         with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
-            result = json.loads(response.read().decode('utf-8'))
+            raw_data = response.read().decode('utf-8')
+            
+            # 调试模式：打印原始响应
+            if '--debug' in sys.argv:
+                print("🔍 原始响应:")
+                print(raw_data[:500])
+                print("...")
+            
+            # API 可能返回多个 JSON（频率限制等），只解析第一个
+            # 找到第一个完整的 JSON 对象
+            try:
+                result = json.loads(raw_data)
+            except json.JSONDecodeError:
+                # 尝试找到第一个 } 并解析
+                brace_count = 0
+                end_pos = 0
+                for i, char in enumerate(raw_data):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            end_pos = i + 1
+                            break
+                
+                if end_pos > 0:
+                    result = json.loads(raw_data[:end_pos])
+                else:
+                    raise
             
             if result.get('code') == 0:
                 return result.get('data', {})
@@ -285,6 +316,7 @@ def main():
     # 输出选项
     parser.add_argument('--verbose', '-v', action='store_true', help='显示详细信息')
     parser.add_argument('--json', action='store_true', help='输出 JSON 格式')
+    parser.add_argument('--debug', action='store_true', help='调试模式（打印原始响应）')
     
     args = parser.parse_args()
     

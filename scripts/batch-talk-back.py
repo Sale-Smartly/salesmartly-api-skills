@@ -61,14 +61,28 @@ def generate_sign(api_key: str, params: dict) -> str:
 
 
 def make_request(url: str, data: dict, api_key: str) -> dict:
-    """发送 API 请求"""
+    """发送 API 请求（使用 multipart/form-data）"""
+    import uuid
+    
     # 生成签名
     sign = generate_sign(api_key, data)
     
+    # 生成 multipart/form-data
+    boundary = f"----WebKitFormBoundary{uuid.uuid4().hex[:16]}"
+    body_lines = []
+    for key, value in data.items():
+        body_lines.append(f"--{boundary}")
+        body_lines.append(f'Content-Disposition: form-data; name="{key}"')
+        body_lines.append("")
+        body_lines.append(str(value))
+    body_lines.append(f"--{boundary}--")
+    body_lines.append("")
+    body_data = "\r\n".join(body_lines).encode('utf-8')
+    
     # 准备请求
-    form_data = urllib.parse.urlencode(data).encode('utf-8')
-    req = urllib.request.Request(url, data=form_data, method='POST')
-    req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+    req = urllib.request.Request(url, data=body_data, method='POST')
+    req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
+    req.add_header('User-Agent', 'SaleSmartly-Agent/1.0')
     req.add_header('external-sign', sign)
     
     # SSL 验证（安全配置）
