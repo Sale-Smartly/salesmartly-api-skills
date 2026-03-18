@@ -185,7 +185,7 @@ def get_member_list(page: int = 1, page_size: int = 100):
         sys.exit(1)
 
 
-def get_session_stats(member_id: int = None, status: int = None, time_range: str = None):
+def get_session_stats(member_id: int = None, status: int = None, time_range: str = None, end_time_range: str = None):
     """
     获取会话统计（支持分页获取所有数据）
     
@@ -194,7 +194,8 @@ def get_session_stats(member_id: int = None, status: int = None, time_range: str
     Args:
         member_id: 客服 ID（可选，不传则获取所有）
         status: 会话状态（0=活跃，1=已结束，None=全部）
-        time_range: 时间范围（JSON 字符串）
+        time_range: 开始时间范围（JSON 字符串）
+        end_time_range: 结束时间范围（JSON 字符串，仅当查询已结束会话时需要）
     
     Returns:
         dict: {member_id: {'total': 总数， 'active': 活跃数， 'ended': 已结束数， 'sessions': [...]}}
@@ -226,6 +227,10 @@ def get_session_stats(member_id: int = None, status: int = None, time_range: str
         
         if time_range:
             params['start_time'] = time_range
+        
+        # 已结束会话需要 end_time 参数
+        if end_time_range and status == 1:
+            params['end_time'] = end_time_range
         
         # 生成签名
         sign = generate_sign(api_key, params)
@@ -329,7 +334,10 @@ def format_stats(members: list, sessions: list, status_filter: int = None, verbo
         if not sys_user_id:
             continue
         
-        session_status = session.get('session_status', 0)
+        # 判断会话状态：有 end_time 且不为 0 表示已结束
+        end_time = session.get('end_time', 0)
+        session_status = 1 if (end_time and end_time > 0) else 0
+        
         msg_count = session.get('msg_count', 0)
         
         stats[sys_user_id]['total'] += 1
@@ -448,21 +456,27 @@ def main():
     
     # 解析时间范围
     time_range = None
+    end_time_range = None
+    time_desc = ""
     
     if args.today:
         today = datetime.now().strftime('%Y-%m-%d')
         time_range = parse_time_range(start_date=today, end_date=today)
+        end_time_range = time_range  # 已结束会话也用相同的时间范围
         time_desc = "今天"
     elif args.yesterday:
         yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         time_range = parse_time_range(start_date=yesterday, end_date=yesterday)
+        end_time_range = time_range
         time_desc = "昨天"
     elif args.days:
         time_range = parse_time_range(days=args.days)
+        end_time_range = time_range
         time_desc = f"最近 {args.days} 天"
     elif args.start_date:
         time_range = parse_time_range(start_date=args.start_date, 
                                       end_date=args.end_date)
+        end_time_range = time_range
         time_desc = f"{args.start_date} 至 {args.end_date or '今天'}"
     else:
         time_desc = "全部时间"
@@ -473,27 +487,57 @@ def main():
     print(f"✅ 共 {len(members)} 个成员")
     
     # 获取会话数据
-    if args.member_id:
-        print(f"⏳ 正在获取客服 {args.member_id} 的会话数据...")
-    else:
-        print(f"⏳ 正在获取所有成员的会话数据...")
-    
-    if time_desc:
-        print(f"📅 时间范围：{time_desc}")
+    all_sessions = []
     
     if args.status is not None:
+        # 查询单一状态（活跃或已结束）
+        if args.member_id:
+            print(f"⏳ 正在获取客服 {args.member_id} 的会话数据...")
+        else:
+            print(f"⏳ 正在获取所有成员的会话数据...")
+        
+        if time_desc:
+            print(f"📅 时间范围：{time_desc}")
+        
         status_text = "活跃" if args.status == 0 else "已结束"
         print(f"📊 会话类型：{status_text}")
+        
+        all_sessions = get_session_stats(
+            member_id=args.member_id,
+            status=args.status,
+            time_range=time_range,
+            end_time_range=end_time_range
+        )
     else:
-        print("📊 会话类型：活跃 + 已结束（全部）")
+        # 查询全部状态（活跃 + 已结束）- 分两次查询
+        print(f"⏳ 正在获取所有成员的会话数据...")
+        if time_desc:
+            print(f"📅 时间范围：{time_desc}")
+        print(f"📊 会话类型：活跃 + 已结束（全部）")
+        
+        # 查询活跃会话
+        print("  → 查询活跃会话...")
+        active_sessions = get_session_stats(
+            member_id=args.member_id,
+            status=0,
+            time_range=time_range
+        )
+        print(f"    ✅ 活跃会话：{len(active_sessions)} 个")
+        
+        # 查询已结束会话
+        print("  → 查询已结束会话...")
+        ended_sessions = get_session_stats(
+            member_id=args.member_id,
+            status=1,
+            time_range=time_range,
+            end_time_range=end_time_range
+        )
+        print(f"    ✅ 已结束会话：{len(ended_sessions)} 个")
+        
+        # 合并
+        all_sessions = active_sessions + ended_sessions
     
-    sessions = get_session_stats(
-        member_id=args.member_id,
-        status=args.status,
-        time_range=time_range
-    )
-    
-    print(f"✅ 共获取 {len(sessions)} 个会话")
+    print(f"✅ 共获取 {len(all_sessions)} 个会话")
     
     # 输出结果
     if args.json:
@@ -501,7 +545,7 @@ def main():
         result = {
             'time_range': time_desc,
             'status_filter': args.status,
-            'total_sessions': len(sessions),
+            'total_sessions': len(all_sessions),
             'members': [],
         }
         
@@ -510,7 +554,7 @@ def main():
         
         # 统计
         stats = defaultdict(lambda: {'total': 0, 'active': 0, 'ended': 0})
-        for session in sessions:
+        for session in all_sessions:
             sys_user_id = session.get('sys_user_id')
             if not sys_user_id:
                 continue
@@ -535,7 +579,7 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         # 表格输出
-        format_stats(members, sessions, status_filter=args.status, verbose=args.verbose)
+        format_stats(members, all_sessions, status_filter=args.status, verbose=args.verbose)
 
 
 if __name__ == '__main__':
