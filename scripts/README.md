@@ -1,6 +1,6 @@
 # SaleSmartly API Scripts - 脚本列表
 
-> 📦 19 个 Python 脚本，100% 覆盖 SaleSmartly API 核心功能
+> 📦 20 个 Python 脚本，100% 覆盖 SaleSmartly API 核心功能
 
 ---
 
@@ -22,6 +22,7 @@
 | [customer-stats.py](#customer-statspy) | 客户统计 | `--days`, `--source` | `--days 30` |
 | [query-members.py](#query-memberspy) | 团队成员 | 无 | - |
 | [query-sessions.py](#query-sessionspy) | 会话列表 | `--status`, `--member` | `--status 1` |
+| [member-session-stats.py](#member-session-statspy) | 客服会话统计 | `--days`, `--status` | `--days 7` |
 | [assign-session.py](#assign-sessionpy) | 分配会话 | `--session`, `--member` | `--session 123 --member 456` |
 
 ### 🟢 低频使用（按需调用）

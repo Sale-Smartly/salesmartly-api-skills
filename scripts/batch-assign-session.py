@@ -190,8 +190,8 @@ def main():
         end   - 结束分配（释放客户，需要 task_id）
     
     assign_type:
-        0 - 只分配无进行中会话的客户（默认）
-        1 - 分配全部客户（包括有进行中会话的）
+        0 - 只分配无进行中会话的客户
+        1 - 分配全部客户（默认，包括有进行中会话的，强制分配）
         """
     )
     
@@ -210,8 +210,8 @@ def main():
                        help='start=开始分配，end=结束分配')
     
     # 可选参数
-    parser.add_argument('--assign-type', type=int, default=0, choices=[0, 1],
-                       help='分配类型：0=无进行中会话（默认），1=全部')
+    parser.add_argument('--assign-type', type=int, default=1, choices=[0, 1],
+                       help='分配类型：0=无进行中会话，1=全部（默认，强制分配）')
     parser.add_argument('--task-id', type=str,
                        help='action 为 end 时必需，结束当前分配的任务 ID')
     parser.add_argument('--config', type=str, default='api-key.json',

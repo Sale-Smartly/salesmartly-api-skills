@@ -216,6 +216,9 @@ uv run scripts/assign-session.py --chat-user-id <ID> --member-id <成员 ID>
 # 批量分配会话（多个客户）
 uv run scripts/batch-assign-session.py --chat-user-ids <ID1>,<ID2> --assign-sys-user-id <客服 ID> --sys-user-id <操作者 ID> --action start
 
+# 批量分配会话（仅无进行中会话的客户）
+uv run scripts/batch-assign-session.py --chat-user-ids <ID1>,<ID2> --assign-sys-user-id <客服 ID> --sys-user-id <操作者 ID> --action start --assign-type 0
+
 # 结束分配（释放客户）
 uv run scripts/batch-assign-session.py --chat-user-ids <ID1>,<ID2> --assign-sys-user-id <客服 ID> --sys-user-id <操作者 ID> --action end --task-id <任务 ID>
 
