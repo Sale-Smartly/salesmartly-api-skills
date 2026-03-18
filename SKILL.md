@@ -1,6 +1,6 @@
 ---
 name: salesmartly-api-skills
-description: SaleSmartly 全功能 API 技能。24 个核心脚本，覆盖客户/会话/营销/WhatsApp 管理。
+description: SaleSmartly 全功能 API 技能。26 个核心脚本，覆盖客户/会话/营销/WhatsApp 管理。
 triggers:
   - "查客户"
   - "查销售"
@@ -15,7 +15,7 @@ triggers:
 
 # SaleSmartly API Skills
 
-> 📦 SaleSmartly 全功能 API 自动化脚本系统 | 24 个核心脚本 | 100% API 覆盖
+> 📦 SaleSmartly 全功能 API 自动化脚本系统 | 26 个核心脚本 | 100% API 覆盖
 
 ---
 
@@ -36,6 +36,9 @@ triggers:
 | "看看聊天记录" | 查询消息 | `query-messages.py` | `--chat-user-id` |
 | "查昨天的聊天" | 查询消息 | `query-all-messages.py` | `--yesterday` |
 | "把这个客户给小王" | 分配会话 | `assign-session.py` | `--chat-user-id`, `--member-id` |
+| "批量分配客户" | 批量分配 | `batch-assign-session.py` | `--chat-user-ids`, `--assign-sys-user-id`, `--action start` |
+| "释放这些客户" | 结束分配 | `batch-assign-session.py` | `--chat-user-ids`, `--task-id`, `--action end` |
+| "批量回聊客户" | 批量回聊 | `batch-talk-back.py` | `--chat-user-ids`, `--sys-user-id` |
 | "结束这个会话" | 结束会话 | `end-session.py` | `--chat-session-id` |
 | "WhatsApp 设备" | 查询设备 | `query-whatsapp-apps.py` | `--status 1` |
 | "添加 WhatsApp" | 新增设备 | `add-whatsapp-device.py` | `--name`, `--phone` |
@@ -206,6 +209,21 @@ uv run scripts/query-messages.py --chat-user-id <用户 ID> --days 7
 
 # 全量记录
 uv run scripts/query-all-messages.py --page-size 50
+
+# 分配会话（单个）
+uv run scripts/assign-session.py --chat-user-id <ID> --member-id <成员 ID>
+
+# 批量分配会话（多个客户）
+uv run scripts/batch-assign-session.py --chat-user-ids <ID1>,<ID2> --assign-sys-user-id <客服 ID> --sys-user-id <操作者 ID> --action start
+
+# 结束分配（释放客户）
+uv run scripts/batch-assign-session.py --chat-user-ids <ID1>,<ID2> --assign-sys-user-id <客服 ID> --sys-user-id <操作者 ID> --action end --task-id <任务 ID>
+
+# 批量回聊（异步处理）
+uv run scripts/batch-talk-back.py --chat-user-ids <ID1>,<ID2> --sys-user-id <客服 ID>
+
+# 结束会话
+uv run scripts/end-session.py --chat-session-id <会话 ID>
 ```
 
 **⚠️ 重要：聊天记录发送人 ID 说明（AI 必读！）**
