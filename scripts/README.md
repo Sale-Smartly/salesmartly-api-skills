@@ -289,6 +289,72 @@ uv run scripts/customer-stats.py --tags
 
 ---
 
+### member-session-stats.py
+
+**功能**：统计指定时间范围内每个客服的接待会话数
+
+**API**: 
+- `/api/v2/get-member-list`
+- `/api/v2/get-session-list`
+
+**参数**：
+```bash
+--today            # 统计今天
+--yesterday        # 统计昨天
+--days N           # 统计最近 N 天
+--start-date DATE  # 开始日期（YYYY-MM-DD）
+--end-date DATE    # 结束日期（YYYY-MM-DD）
+--status N         # 会话状态（0=活跃，1=已结束，不传则统计全部）
+--member ID        # 指定客服 ID
+--verbose          # 显示详细会话列表
+--json             # 输出 JSON 格式
+```
+
+**示例**：
+```bash
+# 统计最近 7 天所有客服的会话数（活跃 + 已结束）
+uv run scripts/member-session-stats.py --days 7
+
+# 统计今天的会话
+uv run scripts/member-session-stats.py --today
+
+# 只统计活跃会话
+uv run scripts/member-session-stats.py --status 0 --days 30
+
+# 只统计已结束会话
+uv run scripts/member-session-stats.py --status 1 --days 30
+
+# 统计指定客服的会话
+uv run scripts/member-session-stats.py --member 167 --days 7
+
+# 显示详细会话列表
+uv run scripts/member-session-stats.py --days 30 --verbose
+
+# 输出 JSON 格式
+uv run scripts/member-session-stats.py --days 7 --json
+```
+
+**输出**：
+```
+📊 团队客服会话统计
+========================================================================================================================
+客服              角色           总会话        活跃       已结束        消息总数       客户消息       客服消息      
+------------------------------------------------------------------------------------------------------------------------
+客服 167           管理员         25         4        21         226        77         149       
+客服 216571        普通成员       2          0        2          22         20         2         
+------------------------------------------------------------------------------------------------------------------------
+总计                           27         4        23         248        
+========================================================================================================================
+```
+
+**说明**：
+- **默认累加**：默认同时统计活跃会话和已结束会话
+- **单独查询**：使用 `--status 0` 或 `--status 1` 单独查询
+- **详细模式**：`--verbose` 显示每个会话的详细信息
+- **自动分页**：自动获取所有页面数据，无需手动分页
+
+---
+
 ### query-members.py
 
 **功能**：查询团队成员列表
