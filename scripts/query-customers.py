@@ -105,7 +105,7 @@ def fetch_all_pages(api_key, project_id, start_time, end_time, page_size=100):
     return all_customers
 
 
-def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_by: str = 'updated'):
+def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_by: str = 'updated', fetch_all: bool = False):
     """
     查询客户列表
     
@@ -114,6 +114,7 @@ def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_b
         page_size: 每页大小（最大 100）
         days: 查询最近 N 天的数据
         filter_by: 过滤方式 ('updated'=按更新时间，'created'=按创建时间)
+        fetch_all: 是否自动获取所有页面数据
     """
     api_key, project_id = load_config()
     
@@ -161,50 +162,63 @@ def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_b
     else:
         # 按更新时间过滤（API 原生支持）
         updated_time_str = json.dumps({"start": start_time, "end": end_time})
-        params = {
-            "project_id": project_id,
-            "updated_time": updated_time_str,
-            "page": str(page),
-            "page_size": str(page_size)
-        }
         
-        sign = generate_sign(api_key, params)
-        
-        query_params = {
-            "project_id": project_id,
-            "updated_time": urllib.parse.quote(updated_time_str),
-            "page": str(page),
-            "page_size": str(page_size)
-        }
-        query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
-        url = f"{API_BASE_URL}/api/v2/get-contact-list?{query_string}"
-        
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "SaleSmartly-Agent/1.0",
-            "External-Sign": sign
-        }
-        
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = True
-        ssl_context.verify_mode = ssl.CERT_REQUIRED
-        
-        try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
-                resp_json = json.loads(response.read().decode('utf-8'))
+        # 如果 fetch_all 为 True，获取所有页面
+        if fetch_all:
+            print("正在获取所有客户数据...")
+            all_customers = fetch_all_pages(api_key, project_id, start_time, end_time, page_size)
+            customers = all_customers
+            total = len(customers)
+            page = 1
+            page_customers = customers
+        else:
+            # 只获取单页
+            params = {
+                "project_id": project_id,
+                "updated_time": updated_time_str,
+                "page": str(page),
+                "page_size": str(page_size)
+            }
             
-            if resp_json.get('code') != 0:
-                print(f"❌ 查询失败：{resp_json.get('msg', 'Unknown error')} (code: {resp_json.get('code')})")
+            sign = generate_sign(api_key, params)
+            
+            query_params = {
+                "project_id": project_id,
+                "updated_time": urllib.parse.quote(updated_time_str),
+                "page": str(page),
+                "page_size": str(page_size)
+            }
+            query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
+            url = f"{API_BASE_URL}/api/v2/get-contact-list?{query_string}"
+            
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "SaleSmartly-Agent/1.0",
+                "External-Sign": sign
+            }
+            
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = True
+            ssl_context.verify_mode = ssl.CERT_REQUIRED
+            
+            try:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
+                    resp_json = json.loads(response.read().decode('utf-8'))
+                
+                if resp_json.get('code') != 0:
+                    print(f"❌ 查询失败：{resp_json.get('msg', 'Unknown error')} (code: {resp_json.get('code')})")
+                    sys.exit(1)
+                
+                data = resp_json.get('data', {})
+                customers = data.get('list', [])
+                total = data.get('total', 0)
+                
+            except Exception as e:
+                print(f"❌ 请求失败：{e}")
                 sys.exit(1)
             
-            data = resp_json.get('data', {})
-            customers = data.get('list', [])
-            total = data.get('total', 0)
-            
-        except Exception as e:
-            print(f"❌ 请求失败：{e}")
-            sys.exit(1)
+            page_customers = customers
     
     # 显示结果
     print(f"\n{'='*60}")
@@ -244,10 +258,11 @@ def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_b
 def main():
     parser = argparse.ArgumentParser(description='SaleSmartly 客户查询工具')
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
-    parser.add_argument('--page-size', type=int, default=20, help='每页大小（最大 100）')
+    parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
     parser.add_argument('--days', type=int, default=30, help='查询最近 N 天的数据')
     parser.add_argument('--filter-by', type=str, choices=['updated', 'created'], default='updated',
                         help='过滤方式：updated=按更新时间，created=按创建时间')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
     
     args = parser.parse_args()
     
@@ -255,7 +270,8 @@ def main():
         page=args.page,
         page_size=args.page_size,
         days=args.days,
-        filter_by=args.filter_by
+        filter_by=args.filter_by,
+        fetch_all=args.all
     )
 
 

@@ -318,11 +318,111 @@ for k, v in sorted_params:
 sign = hashlib.md5("&".join(sign_parts).encode()).hexdigest()
 ```
 
-## 注意事项
+## ⚠️ 重要：分页处理规则（AI 必读！）
+
+**大模型常见错误：只获取第一页数据就输出结果！**
+
+### 分页处理流程
+
+**当调用任何返回列表的 API 时，必须按以下步骤处理：**
+
+```
+步骤 1：调用 API 获取第一页
+  → 检查响应中的 `total` 和 `page_size` 字段
+
+步骤 2：判断是否需要翻页
+  → 如果 total > page_size：需要翻页
+  → 如果 total <= page_size：只有一页，直接输出
+
+步骤 3：如果需要翻页
+  → 计算总页数：total_pages = ceil(total / page_size)
+  → 循环调用 API 获取所有页面（page=2, 3, ...）
+  → 合并所有页面的数据
+
+步骤 4：输出完整结果
+  → 告知用户总数据量
+  → 输出完整列表或摘要
+```
+
+### 示例：查询客户列表
+
+**❌ 错误做法（只获取第一页）**：
+```python
+# 只调用一次，忽略 total 字段
+result = query_customers(page=1, page_size=20)
+# 实际有 986 个客户，但只返回 20 个
+print(f"共有 {len(result['list'])} 个客户")  # 错误！
+```
+
+**✅ 正确做法（处理分页）**：
+```python
+# 第一次调用
+result = query_customers(page=1, page_size=100)
+total = result['data']['total']  # 986
+page_size = result['data']['page_size']  # 100
+
+# 判断是否需要翻页
+if total > page_size:
+    # 需要翻页：获取所有页面
+    all_customers = result['data']['list']
+    total_pages = (total + page_size - 1) // page_size
+    
+    for page in range(2, total_pages + 1):
+        result = query_customers(page=page, page_size=100)
+        all_customers.extend(result['data']['list'])
+    
+    print(f"共有 {total} 个客户")  # 正确！
+else:
+    # 只有一页
+    print(f"共有 {total} 个客户")
+```
+
+### 何时需要特别关注分页？
+
+| 场景 | 数据量预估 | 是否需要翻页 |
+|------|-----------|-------------|
+| 今天的新增客户 | 通常 < 50 | ❌ 可能不需要 |
+| 最近 7 天的客户 | 通常 100-500 | ✅ **需要** |
+| 所有客户列表 | 通常 500-2000+ | ✅ **必须** |
+| 聊天记录查询 | 可能数千条 | ✅ **必须** |
+| 客服团队成员 | 通常 < 50 | ❌ 可能不需要 |
+
+### 脚本参数建议
+
+**对于需要处理大量数据的查询，使用以下参数：**
+
+```bash
+# ✅ 推荐：使用较大的 page_size 减少请求次数
+uv run scripts/query-customers.py --days 7 --page-size 100
+
+# ✅ 推荐：添加 --all 参数自动获取所有数据
+uv run scripts/query-customers.py --days 7 --all
+
+# ✅ 推荐：使用 --summary 先查看统计
+uv run scripts/query-customers.py --days 7 --summary
+```
+
+### AI 回复模板
+
+**当数据量较大时，主动告知用户：**
+
+```
+✅ 共找到 {total} 条记录（{pages} 页）
+
+由于数据量较大，我为您获取了完整列表：
+- 显示前 20 条摘要
+- 完整数据已保存到文件：xxx.json
+
+需要我详细展示某部分数据吗？
+```
+
+---
+
+## 其他注意事项
 
 1. **API 域名**: `https://developer.salesmartly.com`
 2. **时间戳**: 13 位毫秒自动转换为秒
-3. **分页**: page_size 最大 100
+3. **分页限制**: page_size 最大 100
 4. **SSL 验证**: 默认启用完整 SSL 验证（CERT_REQUIRED + 主机名验证）
 
 ## 相关文档
