@@ -154,10 +154,60 @@ def format_timestamp(ts, milli=False) -> str:
         return str(ts)
 
 
+def fetch_all_messages(api_key, project_id, params_base, page_size=100, max_pages=20, quiet=False):
+    """获取所有页面的消息数据"""
+    all_messages = []
+    total = 0
+    
+    for page in range(1, max_pages + 1):
+        params = dict(params_base)
+        params['page'] = str(page)
+        params['page_size'] = str(page_size)
+        
+        sign = generate_sign(api_key, params)
+        
+        # 构建 URL
+        query_params = dict(params)
+        for k in ['updated_time', 'created_time', 'send_time', 'msg_content']:
+            if k in query_params:
+                query_params[k] = urllib.parse.quote(query_params[k], safe='')
+        query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
+        url = f"{API_BASE_URL}/api/v2/get-all-message-list?{query_string}"
+        req = urllib.request.Request(url, headers={
+            "Content-Type": "application/json",
+            "User-Agent": "SaleSmartly-Agent/1.0",
+            "External-Sign": sign
+        })
+        
+        ssl_context = ssl.create_default_context()
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        
+        with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
+            resp_json = json.loads(response.read().decode('utf-8'))
+        
+        if resp_json.get('code') != 0:
+            print(f"❌ 第{page}页请求失败：{resp_json.get('msg', 'Unknown error')}")
+            break
+        
+        data = resp_json.get('data', {})
+        messages = data.get('list', [])
+        total = data.get('total', 0)
+        all_messages.extend(messages)
+        
+        if not quiet and page % 5 == 0:
+            print(f"  已获取第 {page} 页 ({len(messages)} 条)，共 {len(all_messages)}/{total} 条...")
+        
+        # 如果已经获取完所有数据，提前退出
+        if len(all_messages) >= total:
+            break
+    
+    return all_messages, total
+
+
 def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
               send_time: str = None, updated_time: str = None,
               summary: bool = False, quiet: bool = False,
-              format_type: str = 'table', **kwargs):
+              format_type: str = 'table', fetch_all: bool = False, **kwargs):
     """
     Query - Get All Messages
     
@@ -181,7 +231,10 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
         print(f"📊 Query - Get All Messages")
         print(f"API: /api/v2/get-all-message-list")
         print(f"方法：GET")
-        print(f"页码：{page}")
+        if fetch_all:
+            print(f"模式：获取所有数据 (--all)")
+        else:
+            print(f"页码：{page}")
         print(f"每页大小：{page_size}")
         if msg_content:
             print(f"关键词：{msg_content}")
@@ -197,6 +250,24 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
         "page": str(page),
         "page_size": str(page_size)
     }
+    
+    # 如果 fetch_all 为 True，获取所有页面
+    if fetch_all:
+        if not quiet:
+            print("正在获取所有页面数据...")
+        
+        # 构建基础参数（不含 page 和 page_size）
+        params_base = {"project_id": project_id}
+        if msg_content:
+            params_base['msg_content'] = msg_content
+        if updated_time:
+            params_base['updated_time'] = updated_time
+        if send_time:
+            params_base['send_time'] = send_time
+        
+        all_messages, total = fetch_all_messages(api_key, project_id, params_base, page_size, quiet=quiet)
+        data = {'list': all_messages, 'total': total, 'page': 1, 'page_size': len(all_messages)}
+    else:
     
     # 添加可选参数
     if msg_content:
@@ -365,7 +436,8 @@ def main():
     
     # 分页参数
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
-    parser.add_argument('--page-size', type=int, default=20, help='每页大小（最大 100）')
+    parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
     
     # 筛选参数
     parser.add_argument('--msg-content', type=str, default=None, help='关键词筛选（可选）')
@@ -415,7 +487,8 @@ def main():
         updated_time=args.updated_time,
         summary=args.summary,
         quiet=args.quiet,
-        format_type=args.format
+        format_type=args.format,
+        fetch_all=args.all
     )
 
 

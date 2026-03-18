@@ -177,7 +177,9 @@ def main_func(page: int = 1, page_size: int = 20, **kwargs):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
-    parser.add_argument('--page-size', type=int, default=20, help='每页大小（最大 100）')
+    parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
+    
     parser.add_argument('--link-url', type=str, default=None, help='分流链接 URL')
     args, unknown = parser.parse_known_args()
     main_func(page=args.page, page_size=args.page_size, link_url=args.link_url)

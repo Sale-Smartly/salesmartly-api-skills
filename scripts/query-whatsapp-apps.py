@@ -185,7 +185,9 @@ def query_whatsapp_apps(page: int = 1, page_size: int = 20, status: int = None,
 def main():
     parser = argparse.ArgumentParser(description='SaleSmartly WhatsApp APP 查询工具')
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
-    parser.add_argument('--page-size', type=int, default=20, help='每页大小（最大 100）')
+    parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
+    
     parser.add_argument('--status', type=int, choices=[0, 1, 2], default=None, 
                         help='设备状态：0-未连接 1-有效 2-无效')
     parser.add_argument('--name', type=str, default=None, help='WhatsApp app 名称')

@@ -175,7 +175,9 @@ def query_members(page: int = 1, page_size: int = 20, status: str = None):
 def main():
     parser = argparse.ArgumentParser(description='SaleSmartly 团队成员查询工具')
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
-    parser.add_argument('--page-size', type=int, default=20, help='每页大小（最大 100）')
+    parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
+    
     parser.add_argument('--status', type=str, choices=['active', 'inactive', 'all'], 
                         default=None, help='状态过滤：active=活跃，inactive=非活跃，all=全部')
     

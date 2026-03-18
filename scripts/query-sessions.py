@@ -269,6 +269,8 @@ def main():
     parser = argparse.ArgumentParser(description='SaleSmartly 会话列表查询工具')
     parser.add_argument('--page', type=int, default=1, help='页码（从 1 开始）')
     parser.add_argument('--page-size', type=int, default=10, help='每页大小（最大 100）')
+    parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
+    
     parser.add_argument('--session-status', type=str, choices=['active', 'ended'], default='active',
                         help='会话状态：active=活跃会话，ended=已结束会话')
     parser.add_argument('--sys-user-id', type=int, help='客服 ID（筛选指定客服的会话）')
