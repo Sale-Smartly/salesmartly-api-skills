@@ -40,6 +40,7 @@ API_BASE_URL = "https://developer.salesmartly.com"
 
 def load_config():
     """加载配置文件"""
+    global API_BASE_URL
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
@@ -47,9 +48,15 @@ def load_config():
             # 1. 嵌套格式：{"salesmartly": {"apiKey": "...", "projectId": "..."}}
             # 2. 扁平格式：{"apiKey": "...", "projectId": "..."}
             if 'salesmartly' in config:
-                return config['salesmartly'].get('apiKey'), config['salesmartly'].get('projectId')
+                api_key = config['salesmartly'].get('apiKey')
+                project_id = config['salesmartly'].get('projectId')
             else:
-                return config.get('apiKey'), config.get('projectId')
+                api_key = config.get('apiKey')
+                project_id = config.get('projectId')
+            # 支持自定义域名
+            if config.get('baseUrl'):
+                API_BASE_URL = config.get('baseUrl')
+            return api_key, project_id
     except Exception as e:
         print(f"❌ 加载配置文件失败：{e}")
         print(f"提示：请确保 {CONFIG_FILE} 文件存在且格式正确")
@@ -116,6 +123,7 @@ def parse_time_range(days: int = None, start_date: str = None, end_date: str = N
 
 def query_sessions(page: int = 1, page_size: int = 10, status: int = 0, 
                    sub_status: int = None, member_id: int = None,
+                   session_id: str = None,
                    time_range: str = None, end_time_range: str = None):
     """
     获取会话列表
@@ -126,6 +134,7 @@ def query_sessions(page: int = 1, page_size: int = 10, status: int = 0,
         status: 会话状态（0=活跃，1=已结束）
         sub_status: 子状态（0=全部，1=未分配，2=机器人接待）
         member_id: 客服 ID（sys_user_id）
+        session_id: 会话 ID（精确查询单个会话）
         time_range: 开始时间范围（JSON 字符串）
         end_time_range: 结束时间范围（JSON 字符串，仅当 status=1 时有效）
     """
@@ -149,6 +158,9 @@ def query_sessions(page: int = 1, page_size: int = 10, status: int = 0,
     
     if member_id is not None:
         params['sys_user_id'] = member_id
+    
+    if session_id:
+        params['session_id'] = session_id
     
     if time_range:
         params['start_time'] = time_range
@@ -305,6 +317,8 @@ def main():
                         help='子状态（0=全部，1=未分配，2=机器人接待）')
     parser.add_argument('--member', type=int, dest='member_id',
                         help='客服 ID（sys_user_id）')
+    parser.add_argument('--session-id', type=str, dest='session_id',
+                        help='会话 ID（精确查询单个会话）')
     
     # 时间参数
     parser.add_argument('--today', action='store_true', help='查询今天的会话')
@@ -348,6 +362,7 @@ def main():
         status=args.status,
         sub_status=args.sub_status,
         member_id=args.member_id,
+        session_id=args.session_id,
         time_range=time_range,
         end_time_range=end_time_range
     )

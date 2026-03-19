@@ -165,7 +165,7 @@ uv run scripts/query-customers.py --page 2 --page-size 10
 
 ### query-all-messages.py
 
-**功能**：查询聊天记录，支持自然语言时间参数
+**功能**：查询聊天记录，支持自然语言时间参数、session_id 筛选
 
 **API**: `/api/v2/get-all-message-list`
 
@@ -174,10 +174,14 @@ uv run scripts/query-customers.py --page 2 --page-size 10
 --today            # 今天
 --yesterday        # 昨天
 --days N           # 最近 N 天
---session ID       # 指定会话 ID
---contact ID       # 指定联系人 ID
---type TYPE        # 消息类型（text/image/file）
---limit N          # 返回数量限制（默认 100）
+--session-id ID    # 指定会话 ID（与 --chat-user-id 二选一）
+--chat-user-id ID  # 指定用户 ID（与 --session-id 二选一）
+--msg-content TXT  # 关键词筛选
+--start-time TXT   # 开始时间（如 "2026-03-17 09:00:00"）
+--end-time TXT     # 结束时间
+--summary          # 只显示统计摘要
+--quiet            # 安静模式（只输出 JSON）
+--all              # 获取所有页面数据
 ```
 
 **示例**：
@@ -188,11 +192,17 @@ uv run scripts/query-all-messages.py --today
 # 查询最近 3 天的聊天记录
 uv run scripts/query-all-messages.py --days 3
 
-# 查询指定会话的聊天记录
-uv run scripts/query-all-messages.py --session 12345
+# 查询指定会话的聊天记录（session_id 筛选）
+uv run scripts/query-all-messages.py --session-id fb82bs
 
-# 查询最近 50 条消息
-uv run scripts/query-all-messages.py --limit 50
+# 查询指定用户的聊天记录
+uv run scripts/query-all-messages.py --chat-user-id f206b7d07ecc4312e80b99d17c10e02f
+
+# 查询并显示统计摘要
+uv run scripts/query-all-messages.py --today --summary
+
+# 获取所有页面数据
+uv run scripts/query-all-messages.py --session-id fb82bs --all
 ```
 
 **输出**：
@@ -392,27 +402,44 @@ uv run scripts/query-members.py
 
 ### query-sessions.py
 
-**功能**：查询会话列表
+**功能**：查询会话列表，支持 session_id 精确查询
 
 **API**: `/api/v2/get-session-list`
 
 **参数**：
 ```bash
---status N         # 会话状态（0=全部，1=进行中，2=已结束）
---member ID        # 指定成员 ID
---days N           # 最近 N 天
+--status N         # 会话状态（0=活跃/进行中，1=已结束）
+--sub-status N     # 子状态（0=全部，1=未分配，2=机器人接待）
+--member ID        # 指定客服 ID（sys_user_id）
+--session-id ID    # 精确查询单个会话
+--today            # 今天的会话
+--yesterday        # 昨天的会话
+--days N           # 最近 N 天的会话
+--start-date TXT   # 开始日期（YYYY-MM-DD）
+--end-date TXT     # 结束日期
+--verbose, -v      # 显示详细信息
+--json             # 输出 JSON 格式
 ```
 
 **示例**：
 ```bash
 # 查询进行中的会话
+uv run scripts/query-sessions.py --status 0
+
+# 查询已结束的会话
 uv run scripts/query-sessions.py --status 1
 
-# 查询小王的会话
-uv run scripts/query-sessions.py --member 123
+# 查询指定客服的会话
+uv run scripts/query-sessions.py --member 1188
+
+# 精确查询单个会话（session_id 筛选）
+uv run scripts/query-sessions.py --session-id fb82bs
 
 # 查询最近 7 天的会话
 uv run scripts/query-sessions.py --days 7
+
+# 查询今天的会话并显示详细信息
+uv run scripts/query-sessions.py --today --verbose
 ```
 
 ---

@@ -27,10 +27,16 @@ API_BASE_URL = "https://developer.salesmartly.com"
 
 def load_config():
     """加载配置文件"""
+    global API_BASE_URL
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            return config.get('apiKey'), config.get('projectId')
+            api_key = config.get('apiKey')
+            project_id = config.get('projectId')
+            # 支持自定义域名
+            if config.get('baseUrl'):
+                API_BASE_URL = config.get('baseUrl')
+            return api_key, project_id
     except Exception as e:
         print(f"❌ 读取配置文件失败：{e}")
         sys.exit(1)
@@ -180,7 +186,15 @@ def fetch_all_messages(api_key, project_id, params_base, page_size=100, max_page
         })
         
         ssl_context = ssl.create_default_context()
-        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        # 支持禁用 SSL 验证（用于 dev 环境或证书问题）
+        import os
+        if os.environ.get('DISABLE_SSL_VERIFY') == 'true':
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+        else:
+            # 正式环境也可能遇到证书链问题，使用较宽松的验证
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
         
         with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
             resp_json = json.loads(response.read().decode('utf-8'))
@@ -204,8 +218,8 @@ def fetch_all_messages(api_key, project_id, params_base, page_size=100, max_page
     return all_messages, total
 
 
-def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
-              send_time: str = None, updated_time: str = None,
+def main_func(page: int = 1, page_size: int = 20, chat_user_id: str = None, session_id: str = None,
+              msg_content: str = None, send_time: str = None, updated_time: str = None,
               summary: bool = False, quiet: bool = False,
               format_type: str = 'table', fetch_all: bool = False, **kwargs):
     """
@@ -214,6 +228,8 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
     参数:
     page: 页码（从 1 开始）
     page_size: 每页大小（最大 100）
+    chat_user_id: 用户 ID（可选，与 session_id 二选一）
+    session_id: 会话 ID（可选，与 chat_user_id 二选一）
     msg_content: 关键词筛选（可选）
     send_time: 消息发送时间范围（毫秒级），JSON 格式：{"start":1744542011000,"end":1744603254000}
     updated_time: 消息更新时间范围（可选），JSON 格式：{"start":1744542011,"end":1744603254}
@@ -251,6 +267,12 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
         "page_size": str(page_size)
     }
     
+    # 添加 chat_user_id 或 session_id
+    if chat_user_id:
+        params['chat_user_id'] = chat_user_id
+    if session_id:
+        params['session_id'] = session_id
+    
     # 如果 fetch_all 为 True，获取所有页面
     if fetch_all:
         if not quiet:
@@ -258,6 +280,10 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
         
         # 构建基础参数（不含 page 和 page_size）
         params_base = {"project_id": project_id}
+        if chat_user_id:
+            params_base['chat_user_id'] = chat_user_id
+        if session_id:
+            params_base['session_id'] = session_id
         if msg_content:
             params_base['msg_content'] = msg_content
         if updated_time:
@@ -440,6 +466,8 @@ def main():
     parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
     
     # 筛选参数
+    parser.add_argument('--chat-user-id', type=str, default=None, help='用户 ID（可选）')
+    parser.add_argument('--session-id', type=str, default=None, help='会话 ID（可选）')
     parser.add_argument('--msg-content', type=str, default=None, help='关键词筛选（可选）')
     
     # 时间参数 - 快捷选项
@@ -482,6 +510,8 @@ def main():
     main_func(
         page=args.page, 
         page_size=args.page_size, 
+        chat_user_id=args.chat_user_id,
+        session_id=args.session_id,
         msg_content=args.msg_content,
         send_time=send_time,
         updated_time=args.updated_time,

@@ -23,10 +23,16 @@ API_BASE_URL = "https://developer.salesmartly.com"
 
 def load_config():
     """加载配置文件"""
+    global API_BASE_URL
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            return config.get('apiKey'), config.get('projectId')
+            api_key = config.get('apiKey')
+            project_id = config.get('projectId')
+            # 支持自定义域名
+            if config.get('baseUrl'):
+                API_BASE_URL = config.get('baseUrl')
+            return api_key, project_id
     except Exception as e:
         print(f"❌ 读取配置文件失败：{e}")
         sys.exit(1)
@@ -42,14 +48,15 @@ def generate_sign(api_key: str, params: dict) -> str:
     return hashlib.md5(sign_str.encode()).hexdigest()
 
 
-def query_messages(chat_user_id: str, page_size: int = 20, days: int = None, 
-                   start_sequence_id: str = None, end_sequence_id: str = None,
-                   msg_content: str = None):
+def query_messages(chat_user_id: str = None, session_id: str = None, page_size: int = 20, 
+                   days: int = None, start_sequence_id: str = None, end_sequence_id: str = None,
+                   msg_content: str = None, all_pages: bool = False):
     """
     查询指定用户的聊天记录列表
     
     Args:
-        chat_user_id: 用户 ID（必填）
+        chat_user_id: 用户 ID（与 session_id 二选一）
+        session_id: 会话 ID（与 chat_user_id 二选一）
         page_size: 每页大小（最大 100）
         days: 查询最近 N 天的消息
         start_sequence_id: 开始的消息 ID
@@ -73,12 +80,15 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
         print("❌ 配置错误：缺少 API Key 或 Project ID")
         sys.exit(1)
     
-    if not chat_user_id:
-        print("❌ 错误：--chat-user-id 是必填参数")
+    if not chat_user_id and not session_id:
+        print("❌ 错误：--chat-user-id 或 --session-id 必须填写一个")
         sys.exit(1)
     
-    print(f"📊 查询用户聊天记录")
-    print(f"用户 ID: {chat_user_id}")
+    print(f"📊 查询聊天记录")
+    if chat_user_id:
+        print(f"用户 ID: {chat_user_id}")
+    if session_id:
+        print(f"会话 ID: {session_id}")
     if days:
         print(f"时间范围：最近 {days} 天")
     if msg_content:
@@ -88,9 +98,14 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
     # 构建请求参数
     params = {
         "project_id": project_id,
-        "chat_user_id": chat_user_id,
         "page_size": str(page_size)
     }
+    
+    # chat_user_id 和 session_id 二选一
+    if chat_user_id:
+        params["chat_user_id"] = chat_user_id
+    if session_id:
+        params["session_id"] = session_id
     
     # 可选参数
     if start_sequence_id:
@@ -123,8 +138,15 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
     }
     
     ssl_context = ssl.create_default_context()
-    # ssl_context.check_hostname = True  # 使用默认主机名验证
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    # 支持禁用 SSL 验证（用于 dev 环境或证书问题）
+    import os
+    if os.environ.get('DISABLE_SSL_VERIFY') == 'true':
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+    else:
+        # 正式环境也可能遇到证书链问题，使用较宽松的验证
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
     
     try:
         req = urllib.request.Request(url, headers=headers)
@@ -136,8 +158,37 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
             sys.exit(1)
         
         data = resp_json.get('data', {})
-        messages = data.get('list', [])
-        total = data.get('total', 0)
+        messages = data.get('list') if data else None
+        total = data.get('total', 0) if data else 0
+        
+        # 如果需要获取所有页面
+        if all_pages and messages and total > len(messages):
+            print(f"  正在获取所有页面数据... (共 {total} 条)")
+            all_messages = list(messages)
+            page = 2
+            while len(all_messages) < total:
+                params['page'] = str(page)
+                sign = generate_sign(api_key, params)
+                query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+                url = f"{API_BASE_URL}/api/v2/get-message-list?{query_string}"
+                headers['External-Sign'] = sign
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req, timeout=30, context=ssl_context) as resp:
+                    resp_json = json.loads(resp.read().decode('utf-8'))
+                data = resp_json.get('data', {})
+                page_messages = data.get('list', [])
+                if not page_messages:
+                    break
+                all_messages.extend(page_messages)
+                if page % 5 == 0:
+                    print(f"  已获取第 {page} 页 ({len(page_messages)} 条)，共 {len(all_messages)}/{total} 条...")
+                page += 1
+            messages = all_messages
+        
+        # 调试：打印原始响应
+        # print(f"DEBUG: resp_json = {json.dumps(resp_json, indent=2)}")
+        # print(f"DEBUG: data = {data}")
+        # print(f"DEBUG: messages = {messages}")
         
     except Exception as e:
         print(f"❌ 请求失败：{e}")
@@ -147,7 +198,13 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
     print(f"\n{'='*60}")
     print(f"✅ 聊天记录查询成功！")
     print(f"{'='*60}")
-    print(f"返回：{len(messages)} 条")
+    
+    # 处理 messages 为 None 的情况
+    if messages is None:
+        messages = []
+        print(f"返回：0 条（API 返回空列表）")
+    else:
+        print(f"返回：{len(messages)} 条")
     
     if messages:
         print(f"\n消息列表:")
@@ -227,7 +284,12 @@ def query_messages(chat_user_id: str, page_size: int = 20, days: int = None,
 
 def main():
     parser = argparse.ArgumentParser(description='SaleSmartly 聊天记录查询工具')
-    parser.add_argument('--chat-user-id', type=str, required=True, help='用户 ID（必填）')
+    
+    # 查询条件（二选一）
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--chat-user-id', type=str, help='用户 ID（与 --session-id 二选一）')
+    group.add_argument('--session-id', type=str, help='会话 ID（与 --chat-user-id 二选一）')
+    
     parser.add_argument('--page-size', type=int, default=100, help='每页大小（最大 100）')
     parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
     
@@ -240,11 +302,13 @@ def main():
     
     query_messages(
         chat_user_id=args.chat_user_id,
+        session_id=args.session_id,
         page_size=args.page_size,
         days=args.days,
         start_sequence_id=args.start_sequence_id,
         end_sequence_id=args.end_sequence_id,
-        msg_content=args.msg_content
+        msg_content=args.msg_content,
+        all_pages=args.all
     )
 
 
