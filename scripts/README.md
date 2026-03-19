@@ -83,20 +83,18 @@
 ```bash
 --date DATE      # 指定日期（YYYY-MM-DD 格式）
 --days N         # 最近 N 天
---today          # 今天
---yesterday      # 昨天
 ```
 
 **示例**：
 ```bash
-# 查询今天的销售数据
-uv run scripts/daily-sales-report.py --today
-
-# 查询最近 7 天的销售趋势
-uv run scripts/daily-sales-report.py --days 7
+# 查询今天的销售数据（默认）
+uv run scripts/daily-sales-report.py
 
 # 查询指定日期
 uv run scripts/daily-sales-report.py --date 2026-03-15
+
+# 查询最近 7 天的销售趋势
+uv run scripts/daily-sales-report.py --days 7
 ```
 
 **输出**：
@@ -122,10 +120,24 @@ uv run scripts/daily-sales-report.py --date 2026-03-15
 --page N           # 页码（默认 1）
 --page-size N      # 每页数量（默认 20）
 --days N           # 最近 N 天创建的客户
---filter-by TYPE   # 筛选类型（created/updated/last_contact）
---tags TAG1,TAG2   # 按标签筛选
---source SOURCE    # 按来源筛选（小红书/抖音/官网等）
+--filter-by TYPE   # 筛选类型（created/updated）
+--all              # 自动获取所有页面数据
 --chat-user-id ID  # 客户 ID（指定时查询单个客户）
+```
+
+**示例**：
+```bash
+# 查询最近 7 天创建的客户
+uv run scripts/query-customers.py --days 7
+
+# 查询最近 30 天更新的客户
+uv run scripts/query-customers.py --days 30 --filter-by updated
+
+# 查询指定客户
+uv run scripts/query-customers.py --chat-user-id 12345
+
+# 获取所有客户（自动分页）
+uv run scripts/query-customers.py --all
 ```
 
 **示例**：
@@ -229,7 +241,6 @@ uv run scripts/query-all-messages.py --session-id fb82bs --all
 --days N           # N 天未联系（默认 7）
 --limit N          # 返回数量限制（默认 20）
 --dingtalk         # 推送到钉钉
---export FILE      # 导出到 CSV 文件
 ```
 
 **示例**：
@@ -242,9 +253,6 @@ uv run scripts/find-followup-customers.py --days 7 --limit 50
 
 # 查询并推送到钉钉
 uv run scripts/find-followup-customers.py --days 3 --dingtalk
-
-# 查询并导出到 CSV
-uv run scripts/find-followup-customers.py --days 7 --export followup.csv
 ```
 
 **输出**：
@@ -269,9 +277,6 @@ uv run scripts/find-followup-customers.py --days 7 --export followup.csv
 **参数**：
 ```bash
 --days N           # 分析最近 N 天（默认 30）
---source           # 按来源分析
---tags             # 按标签分析
---trend            # 显示趋势图
 ```
 
 **示例**：
@@ -279,11 +284,8 @@ uv run scripts/find-followup-customers.py --days 7 --export followup.csv
 # 分析最近 30 天的客户数据
 uv run scripts/customer-stats.py --days 30
 
-# 按来源分析客户分布
-uv run scripts/customer-stats.py --days 30 --source
-
-# 按标签分析客户分布
-uv run scripts/customer-stats.py --tags
+# 分析最近 7 天的客户数据
+uv run scripts/customer-stats.py --days 7
 ```
 
 **输出**：
@@ -471,16 +473,20 @@ uv run scripts/assign-session.py --session 12345 --member 678
 
 **参数**：
 ```bash
---name NAME        # 客户姓名（必需）
---phone PHONE      # 手机号
---email EMAIL      # 邮箱
---source SOURCE    # 来源
---tags TAG1,TAG2   # 标签
+--phone PHONE           # 客户手机号（必需，加区号，不支持 86）
+--channel CHANNEL       # 渠道 ID（WhatsApp App=12）
+--from-channel-info TXT # 归属渠道信息
+--remark-name NAME      # 客户备注名
+--remark TXT            # 客户备注
 ```
 
 **示例**：
 ```bash
-uv run scripts/create-customer.py --name 张三 --phone 13800138000 --tags VIP
+# 创建客户（WhatsApp 渠道）
+uv run scripts/create-customer.py --phone +85212345678 --channel 12 --remark-name 张三
+
+# 创建客户并添加备注
+uv run scripts/create-customer.py --phone +1234567890 --remark "意向客户"
 ```
 
 ---
@@ -493,24 +499,18 @@ uv run scripts/create-customer.py --name 张三 --phone 13800138000 --tags VIP
 
 **参数**：
 ```bash
---id ID            # 客户 ID（必需）
---name NAME        # 新姓名
---phone PHONE      # 新手机号
---tags TAG1,TAG2   # 新标签（覆盖原有标签）
---add-tags TAG1    # 添加标签
---remove-tags TAG1 # 移除标签
+--chat-user-id ID     # 客户 ID（必需）
+--remark TXT          # 客户备注
+--remark-name NAME    # 客户备注名
 ```
 
 **示例**：
 ```bash
-# 更新客户姓名
-uv run scripts/update-customer.py --id 123 --name 李四
+# 更新客户备注名
+uv run scripts/update-customer.py --chat-user-id 123 --remark-name 李四
 
-# 添加 VIP 标签
-uv run scripts/update-customer.py --id 123 --add-tags VIP
-
-# 移除普通标签
-uv run scripts/update-customer.py --id 123 --remove-tags 普通
+# 更新客户备注
+uv run scripts/update-customer.py --chat-user-id 123 --remark "VIP 客户，已成交"
 ```
 
 ---
@@ -523,41 +523,50 @@ uv run scripts/update-customer.py --id 123 --remove-tags 普通
 
 **参数**：
 ```bash
---customer-ids ID1,ID2,ID3  # 客户 ID 列表（必需）
---tags TAG1,TAG2            # 标签列表（必需）
---operation add/remove      # 操作类型（默认 add）
+--ids ID1,ID2,ID3           # 客户 chat_user_id 列表（逗号分隔，必需）
+--update-label-names TAG1,TAG2  # 标签名称列表（逗号分隔，必需）
+--update-type TYPE          # 操作类型：append=追加，remove=删除，update=覆盖（默认 append）
 ```
 
 **示例**：
 ```bash
-# 给多个客户添加 VIP 标签
-uv run scripts/batch-tags.py --customer-ids 1,2,3 --tags VIP
+# 给多个客户追加 VIP 标签
+uv run scripts/batch-tags.py --ids 1,2,3 --update-label-names VIP
 
-# 从多个客户移除普通标签
-uv run scripts/batch-tags.py --customer-ids 1,2,3 --tags 普通 --operation remove
+# 从多个客户删除普通标签
+uv run scripts/batch-tags.py --ids 1,2,3 --update-label-names 普通 --update-type remove
+
+# 覆盖标签（替换原有标签）
+uv run scripts/batch-tags.py --ids 1,2,3 --update-label-names VIP,已成交 --update-type update
 ```
 
 ---
 
 ### import-orders.py
 
-**功能**：批量导入订单
+**功能**：导入客户订单
 
 **API**: `/api/v2/import-orders`
 
 **参数**：
 ```bash
---file FILE        # CSV 文件路径（必需）
---dry-run          # 预演模式（不实际导入）
+--chat-user-id ID       # 客户 ID（必需）
+--order-id ID           # 订单 ID（必需）
+--order-name NAME       # 订单名称
+--money MONEY           # 金额
+--currency-code CODE    # 货币类型（默认 CNY）
+--status STATUS         # 状态：1-待支付 2-进行中 3-已完成 4-已取消
+--platform PLATFORM     # 平台
+--remark REMARK         # 备注
 ```
 
 **示例**：
 ```bash
 # 导入订单
-uv run scripts/import-orders.py --file orders.csv
+uv run scripts/import-orders.py --chat-user-id 123 --order-id ORD001 --order-name "产品 A" --money 100
 
-# 预演模式（检查数据）
-uv run scripts/import-orders.py --file orders.csv --dry-run
+# 导入已完成的订单
+uv run scripts/import-orders.py --chat-user-id 123 --order-id ORD002 --status 3 --money 200
 ```
 
 ---
@@ -713,20 +722,35 @@ uv run scripts/check-customer-feedback.py --days 7 --dingtalk
 
 ### query-messages.py
 
-**功能**：查询指定会话的消息
+**功能**：查询聊天记录，支持 session_id 或 chat_user_id 筛选
 
 **API**: `/api/v2/get-message-list`
 
 **参数**：
 ```bash
---session ID       # 会话 ID（必需）
---limit N          # 返回数量（默认 20）
---type TYPE        # 消息类型（text/image/file）
+--chat-user-id ID    # 用户 ID（与 --session-id 二选一，必需）
+--session-id ID      # 会话 ID（与 --chat-user-id 二选一，必需）
+--page-size N        # 每页大小（最大 100，默认 100）
+--all                # 自动获取所有页面数据
+--days N             # 查询最近 N 天的消息
+--start-sequence-id ID   # 开始的消息 ID
+--end-sequence-id ID     # 结束的消息 ID
+--msg-content TXT    # 关键词筛选
 ```
 
 **示例**：
 ```bash
-uv run scripts/query-messages.py --session 12345 --limit 50
+# 查询指定会话的消息
+uv run scripts/query-messages.py --session-id j894hri --page-size 50
+
+# 查询指定用户的消息
+uv run scripts/query-messages.py --chat-user-id 7991264511619a11c9466041de714d8d --page-size 50
+
+# 获取会话的所有消息（自动分页）
+uv run scripts/query-messages.py --session-id j894hri --all
+
+# 查询最近 7 天的消息
+uv run scripts/query-messages.py --chat-user-id xxx --days 7
 ```
 
 ---
