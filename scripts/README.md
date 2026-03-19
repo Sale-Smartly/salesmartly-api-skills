@@ -23,6 +23,7 @@
 | [query-members.py](#query-memberspy) | 团队成员 | 无 | - |
 | [query-sessions.py](#query-sessionspy) | 会话列表 | `--status`, `--member` | `--status 1` |
 | [member-session-stats.py](#member-session-statspy) | 客服会话统计 | `--days`, `--status` | `--days 7` |
+| [online-duration-report.py](#online-duration-reportpy) | 在线时长报表 | `--today`, `--days` | `--today` |
 | [assign-session.py](#assign-sessionpy) | 分配会话 | `--session`, `--member` | `--session 123 --member 456` |
 
 ### 🟢 低频使用（按需调用）
@@ -68,6 +69,88 @@
 | [check-api-updates.py](#check-api-updatespy) | 检查 API 更新 | 无 | - |
 | [generate-query-script.py](#generate-query-scriptpy) | 生成查询脚本 | `--api-id` | `--api-id 123` |
 | [batch-generate-scripts.py](#batch-generate-scriptspy) | 批量生成脚本 | 无 | - |
+
+---
+
+## 📖 详细文档
+
+### online-duration-report.py
+
+**功能**：查询客服在指定日期范围内的在线时长统计数据
+
+**API**: `/api/v2/get-online-duration-report`
+
+**参数**：
+```bash
+--today           # 查询今天
+--yesterday       # 查询昨天
+--start DATE      # 开始日期（YYYY-MM-DD）
+--end DATE        # 结束日期（YYYY-MM-DD），与 --start 配合使用
+--days N          # 查询最近 N 天
+--user-id ID      # 客服 ID，筛选指定客服
+--json            # 输出 JSON 格式
+```
+
+**示例**：
+```bash
+# 查询今天的在线时长
+uv run scripts/online-duration-report.py --today
+
+# 查询昨天的在线时长
+uv run scripts/online-duration-report.py --yesterday
+
+# 查询指定日期范围
+uv run scripts/online-duration-report.py --start 2026-03-01 --end 2026-03-31
+
+# 查询最近 7 天的在线时长
+uv run scripts/online-duration-report.py --days 7
+
+# 查询指定客服的在线时长
+uv run scripts/online-duration-report.py --today --user-id 36294
+
+# 输出 JSON 格式
+uv run scripts/online-duration-report.py --today --json
+```
+
+**输出**：
+```
+📊 在线时长报表
+   日期范围：2026-03-18 至 2026-03-18
+   共 1 个客服
+
+====================================================================================================
+客服昵称                         ID         登录时长          在线时长          忙碌时长          离线时长         
+----------------------------------------------------------------------------------------------------
+li.jian@adspower.net           167        14.47 小时        0.00 小时         0.00 小时         14.47 小时       
+----------------------------------------------------------------------------------------------------
+总计                                      14.47 小时        0.00 小时         0.00 小时         14.47 小时       
+====================================================================================================
+
+📝 详细数据（秒）:
+   总登录时长：14 小时 28 分钟 14 秒
+   总在线时长：0 秒
+   总忙碌时长：0 秒
+   总离线时长：14 小时 28 分钟 14 秒
+
+📈 状态比例（占登录时长）:
+   在线：0.0%
+   忙碌：0.0%
+   离线：100.0%
+```
+
+**字段说明**：
+- `login_duration`：登录时长（客服登录系统的总时长）
+- `online_duration`：在线时长（客服处于"在线"状态的时长）
+- `busy_duration`：忙碌时长（客服处于"忙碌"状态的时长）
+- `offline_duration`：离线时长（客服处于"离线"状态的时长）
+
+**使用场景**：
+- ✅ 统计客服每日在线时长
+- ✅ 分析客服工作效率（在线/忙碌/离线比例）
+- ✅ 生成客服考勤报表
+- ✅ 监控客服工作状态
+
+---
 
 ---
 
