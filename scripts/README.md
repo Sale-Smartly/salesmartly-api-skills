@@ -125,22 +125,30 @@ uv run scripts/daily-sales-report.py --date 2026-03-15
 --filter-by TYPE   # 筛选类型（created/updated/last_contact）
 --tags TAG1,TAG2   # 按标签筛选
 --source SOURCE    # 按来源筛选（小红书/抖音/官网等）
+--chat-user-id ID  # 客户 ID（指定时查询单个客户）
 ```
 
 **示例**：
 ```bash
-# 查询最近 7 天新增的客户
+# 批量查询：最近 7 天新增的客户
 uv run scripts/query-customers.py --days 7
 
-# 查询 VIP 标签的客户
+# 批量查询：VIP 标签的客户
 uv run scripts/query-customers.py --tags VIP
 
-# 查询来自小红书的客户
+# 批量查询：来自小红书的客户
 uv run scripts/query-customers.py --source 小红书
+
+# 单个查询：通过客户 ID 查询
+uv run scripts/query-customers.py --chat-user-id abc123
 
 # 分页查询（第 2 页，每页 10 个）
 uv run scripts/query-customers.py --page 2 --page-size 10
 ```
+
+**与 get-customer-history.py 的区别**：
+- `query-customers.py --chat-user-id` → 快速查询单个客户基本信息
+- `get-customer-history.py --chat-user-id` → 查询客户完整画像（含聊天记录 + 跟进建议）
 
 **输出**：
 ```

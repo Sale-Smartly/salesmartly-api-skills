@@ -31,6 +31,7 @@ triggers:
 | "有哪些客户" | 查询客户 | `query-customers.py` | `--days 7` |
 | "VIP 客户有哪些" | 查询客户 | `query-customers.py` | `--tags "VIP"` |
 | "最近 7 天新增客户" | 查询客户 | `query-customers.py` | `--days 7` |
+| "查客户 abc123 的信息" | 查询单个客户 | `query-customers.py` | `--chat-user-id abc123` |
 | "给张三发消息" | 发送消息 | `send-message.py` | `--chat-user-id`, `--msg` |
 | "通知所有 VIP 客户" | 批量发送 | 先 `query-customers.py` 再 `batch-send-message.py` | 需用户确认 |
 | "看看聊天记录" | 查询消息 | `query-messages.py` | `--chat-user-id` |

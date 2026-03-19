@@ -105,7 +105,67 @@ def fetch_all_pages(api_key, project_id, start_time, end_time, page_size=100):
     return all_customers
 
 
-def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_by: str = 'updated', fetch_all: bool = False):
+def query_customer_by_id(api_key, project_id, chat_user_id):
+    """通过客户 ID 查询单个客户"""
+    print(f"🔍 正在查询客户 ID: {chat_user_id} ...")
+    
+    # 遍历客户列表匹配 ID
+    end_time = int(datetime.now().timestamp())
+    start_time = int((datetime.now() - timedelta(days=365)).timestamp())
+    
+    for page in range(1, 20):
+        updated_time_str = json.dumps({"start": start_time, "end": end_time})
+        params = {
+            "project_id": project_id,
+            "updated_time": updated_time_str,
+            "page": str(page),
+            "page_size": "100"
+        }
+        
+        sign = generate_sign(api_key, params)
+        
+        query_params = {
+            "project_id": project_id,
+            "updated_time": urllib.parse.quote(updated_time_str),
+            "page": str(page),
+            "page_size": "100"
+        }
+        query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
+        url = f"{API_BASE_URL}/api/v2/get-contact-list?{query_string}"
+        
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "SaleSmartly-Agent/1.0",
+            "External-Sign": sign
+        }
+        
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = True
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
+                resp_json = json.loads(response.read().decode('utf-8'))
+            
+            customers = resp_json.get('data', {}).get('list', [])
+            
+            # 匹配客户 ID
+            for c in customers:
+                if str(c.get('chat_user_id')) == str(chat_user_id):
+                    return c
+            
+            if len(customers) < 100:
+                break
+                
+        except Exception as e:
+            print(f"❌ 请求失败：{e}")
+            break
+    
+    return None
+
+
+def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_by: str = 'updated', fetch_all: bool = False, chat_user_id: str = None):
     """
     查询客户列表
     
@@ -115,12 +175,44 @@ def query_customers(page: int = 1, page_size: int = 20, days: int = 30, filter_b
         days: 查询最近 N 天的数据
         filter_by: 过滤方式 ('updated'=按更新时间，'created'=按创建时间)
         fetch_all: 是否自动获取所有页面数据
+        chat_user_id: 客户 ID（指定时查询单个客户）
     """
     api_key, project_id = load_config()
     
     if not api_key or not project_id:
         print("❌ 配置错误：缺少 API Key 或 Project ID")
         sys.exit(1)
+    
+    # 如果指定了 chat_user_id，直接查询单个客户
+    if chat_user_id:
+        customer = query_customer_by_id(api_key, project_id, chat_user_id)
+        
+        if not customer:
+            print(f"❌ 未找到客户：{chat_user_id}")
+            sys.exit(1)
+        
+        print(f"\n{'='*60}")
+        print(f"✅ 找到客户！")
+        print(f"{'='*60}\n")
+        
+        print(f"姓名：{customer.get('name', 'N/A')}")
+        print(f"客户 ID: {customer.get('chat_user_id', 'N/A')}")
+        if customer.get('email'):
+            print(f"邮箱：{customer.get('email')}")
+        if customer.get('phone'):
+            print(f"电话：{customer.get('phone')}")
+        if customer.get('country'):
+            print(f"国家：{customer.get('country')}")
+        if customer.get('city'):
+            print(f"城市：{customer.get('city')}")
+        
+        created = customer.get('created_time')
+        if created:
+            created_dt = datetime.fromtimestamp(created)
+            print(f"创建时间：{created_dt.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        print(f"\n{'='*60}")
+        return
     
     # 计算时间范围
     end_time = int(datetime.now().timestamp())
@@ -263,16 +355,23 @@ def main():
     parser.add_argument('--filter-by', type=str, choices=['updated', 'created'], default='updated',
                         help='过滤方式：updated=按更新时间，created=按创建时间')
     parser.add_argument('--all', action='store_true', help='自动获取所有页面数据（当 total > page_size 时）')
+    parser.add_argument('--chat-user-id', type=str, help='客户 ID（指定时查询单个客户）')
     
     args = parser.parse_args()
     
-    query_customers(
-        page=args.page,
-        page_size=args.page_size,
-        days=args.days,
-        filter_by=args.filter_by,
-        fetch_all=args.all
-    )
+    # 如果指定了 --chat-user-id，忽略其他参数
+    if args.chat_user_id:
+        query_customers(
+            chat_user_id=args.chat_user_id
+        )
+    else:
+        query_customers(
+            page=args.page,
+            page_size=args.page_size,
+            days=args.days,
+            filter_by=args.filter_by,
+            fetch_all=args.all
+        )
 
 
 if __name__ == "__main__":
