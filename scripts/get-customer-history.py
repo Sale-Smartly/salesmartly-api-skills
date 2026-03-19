@@ -421,8 +421,7 @@ def get_customer_history(chat_user_id: str = None, phone: str = None,
 
 def main():
     parser = argparse.ArgumentParser(description='SaleSmartly 客户历史查询工具')
-    parser.add_argument('--chat-user-id', type=str, help='客户 ID')
-    parser.add_argument('--customer-id', type=str, help='客户 ID（与 --chat-user-id 相同，别名参数）')
+    parser.add_argument('--chat-user-id', type=str, help='客户 ID（必需，与 --phone 二选一）')
     parser.add_argument('--phone', type=str, help='手机号（与 chat-user-id 二选一）')
     parser.add_argument('--days', type=int, default=30, help='查询最近 N 天的消息（默认 30 天）')
     parser.add_argument('--message-limit', type=int, default=10, help='返回多少条消息（默认 10 条）')
@@ -430,15 +429,12 @@ def main():
     
     args = parser.parse_args()
     
-    # 支持 --customer-id 作为 --chat-user-id 的别名
-    chat_user_id = args.chat_user_id or args.customer_id
-    
-    if not chat_user_id and not args.phone:
-        print("❌ 错误：必须指定 --chat-user-id、--customer-id 或 --phone")
+    if not args.chat_user_id and not args.phone:
+        print("❌ 错误：必须指定 --chat-user-id 或 --phone")
         sys.exit(1)
     
     get_customer_history(
-        chat_user_id=chat_user_id,
+        chat_user_id=args.chat_user_id,
         phone=args.phone,
         days=args.days,
         message_limit=args.message_limit,

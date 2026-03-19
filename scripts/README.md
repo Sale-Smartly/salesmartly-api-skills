@@ -705,7 +705,6 @@ uv run scripts/query-messages.py --session 12345 --limit 50
 **参数**：
 ```bash
 --chat-user-id ID   # 客户 ID（必需，与 --phone 二选一）
---customer-id ID    # 同上，别名参数
 --phone PHONE       # 手机号（与 chat-user-id 二选一）
 --days N            # 查询最近 N 天的消息（默认 30 天）
 --message-limit N   # 返回多少条消息（默认 10 条）
@@ -721,9 +720,6 @@ uv run scripts/query-messages.py --session 12345 --limit 50
 ```bash
 # 通过客户 ID 查询（推荐）
 uv run scripts/get-customer-history.py --chat-user-id abc123
-
-# 通过客户 ID 查询（别名，同样有效）
-uv run scripts/get-customer-history.py --customer-id abc123
 
 # 通过手机号查询
 uv run scripts/get-customer-history.py --phone 8613800138000
