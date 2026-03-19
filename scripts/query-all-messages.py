@@ -268,20 +268,19 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
         all_messages, total = fetch_all_messages(api_key, project_id, params_base, page_size, quiet=quiet)
         data = {'list': all_messages, 'total': total, 'page': 1, 'page_size': len(all_messages)}
     else:
-    
-    # 添加可选参数
-    if msg_content:
-        params['msg_content'] = msg_content
-    if updated_time:
-        params['updated_time'] = updated_time
-    if send_time:
-        params['send_time'] = send_time
-    
-    for key, value in kwargs.items():
-        if value is not None:
-            params[key.replace('-', '_')] = value
-    
-    sign = generate_sign(api_key, params)
+        # 添加可选参数
+        if msg_content:
+            params['msg_content'] = msg_content
+        if updated_time:
+            params['updated_time'] = updated_time
+        if send_time:
+            params['send_time'] = send_time
+        
+        for key, value in kwargs.items():
+            if value is not None:
+                params[key.replace('-', '_')] = value
+        
+        sign = generate_sign(api_key, params)
     
     # 构建 URL
     query_params = dict(params)
@@ -297,7 +296,8 @@ def main_func(page: int = 1, page_size: int = 20, msg_content: str = None,
     })
     
     ssl_context = ssl.create_default_context()
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
     
     try:
         with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:

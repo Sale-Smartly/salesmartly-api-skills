@@ -698,19 +698,46 @@ uv run scripts/query-messages.py --session 12345 --limit 50
 
 ### get-customer-history.py
 
-**功能**：获取客户完整历史（会话 + 订单 + 标签）
+**功能**：获取客户完整画像（基本信息 + 订单 + 标签 + 聊天记录）
 
 **API**: 多个 API 组合
 
 **参数**：
 ```bash
---customer-id ID   # 客户 ID（必需）
+--chat-user-id ID   # 客户 ID（必需，与 --phone 二选一）
+--customer-id ID    # 同上，别名参数
+--phone PHONE       # 手机号（与 chat-user-id 二选一）
+--days N            # 查询最近 N 天的消息（默认 30 天）
+--message-limit N   # 返回多少条消息（默认 10 条）
+--dingtalk          # 发送到钉钉群
 ```
+
+**使用场景**：
+- ✅ 已知客户 ID，查询完整画像
+- ✅ 已知手机号，查询客户信息
+- ✅ 查看特定客户的聊天记录和跟进历史
 
 **示例**：
 ```bash
-uv run scripts/get-customer-history.py --customer-id 123
+# 通过客户 ID 查询（推荐）
+uv run scripts/get-customer-history.py --chat-user-id abc123
+
+# 通过客户 ID 查询（别名，同样有效）
+uv run scripts/get-customer-history.py --customer-id abc123
+
+# 通过手机号查询
+uv run scripts/get-customer-history.py --phone 8613800138000
+
+# 查询客户最近 7 天的聊天记录
+uv run scripts/get-customer-history.py --chat-user-id abc123 --days 7
+
+# 只返回 5 条消息
+uv run scripts/get-customer-history.py --chat-user-id abc123 --message-limit 5
 ```
+
+**与 query-customers.py 的区别**：
+- `query-customers.py` → 批量查询客户列表（按时间/标签筛选）
+- `get-customer-history.py` → 查询单个客户详细信息（已知 ID 或手机号）
 
 ---
 

@@ -40,6 +40,8 @@ triggers:
 | "释放这些客户" | 结束分配 | `batch-assign-session.py` | `--chat-user-ids`, `--task-id`, `--action end` |
 | "批量回聊客户" | 批量回聊 | `batch-talk-back.py` | `--chat-user-ids`, `--sys-user-id` |
 | "结束这个会话" | 结束会话 | `end-session.py` | `--chat-session-id` |
+| "查客户详细信息" | 客户画像 | `get-customer-history.py` | `--chat-user-id`, `--customer-id` |
+| "查张三的聊天记录" | 客户历史 | `get-customer-history.py` | `--chat-user-id`, `--days 30` |
 | "WhatsApp 设备" | 查询设备 | `query-whatsapp-apps.py` | `--status 1` |
 | "添加 WhatsApp" | 新增设备 | `add-whatsapp-device.py` | `--name`, `--phone` |
 | "客户反馈" | 检查反馈 | `check-customer-feedback.py` | `--days 7` |
