@@ -19,6 +19,52 @@ triggers:
 
 ---
 
+## 🚨 红线规则（AI 必须遵守！）
+
+### ⛔ 禁止直接调用 API
+
+**无论任何情况，都不得直接使用 curl/Python/HTTP 客户端调用 SaleSmartly API！**
+
+**❌ 错误做法**：
+```bash
+# 禁止这样做！
+curl -X GET "https://developer.salesmartly.com/api/v2/get-contact-list?..."
+```
+
+```python
+# 禁止这样做！
+requests.get("https://developer.salesmartly.com/api/v2/get-contact-list", ...)
+```
+
+**✅ 正确做法**：
+```bash
+# 必须使用脚本！
+uv run scripts/query-customers.py --days 7
+```
+
+### 为什么必须使用脚本？
+
+| 问题 | 直接调用 API | 使用脚本 |
+|------|-------------|---------|
+| **签名计算** | 容易出错（排序、编码） | 自动处理 |
+| **SSL 验证** | 可能跳过验证，不安全 | 统一配置 |
+| **分页处理** | 容易只获取第一页 | `--all` 自动获取 |
+| **时间格式** | 毫秒/秒容易混淆 | 自动转换 |
+| **错误处理** | 需要自己解析 | 统一错误提示 |
+| **配置管理** | 硬编码 API Key | 配置文件加载 |
+| **数据格式化** | 原始 JSON 难读 | 表格/摘要输出 |
+
+### 脚本已覆盖所有 API
+
+**26 个脚本 = 100% API 覆盖率**，没有任何理由绕过脚本！
+
+如果脚本缺少某个功能：
+1. 检查是否有其他脚本已实现
+2. 如果没有，先添加功能到脚本
+3. **永远不要**临时用 curl/Python 直接调用
+
+---
+
 ## 🗣️ 用户意图映射（AI 必读！）
 
 **当用户说以下话时，按对应方式处理：**
@@ -454,6 +500,7 @@ uv run scripts/query-customers.py --days 7 --summary
 - [GitHub 仓库](https://github.com/Sale-Smartly/salesmartly-api-skills)
 - [API 文档](https://salesmartly-api.apifox.cn/llms.txt)
 - [签名规则](https://help.salesmartly.com/docs/API-Header)
+- [🚫 禁止直接调用 API](NO-DIRECT-API.md) ← **必读！**
 
 ---
 
