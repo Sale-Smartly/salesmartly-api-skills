@@ -114,15 +114,19 @@ def format_duration(seconds):
 
 def format_duration_hours(seconds):
     """
-    格式化时长（秒 → 小时，保留 2 位小数）
+    格式化时长（秒 → *时*分*秒）
     
     Args:
         seconds: 时长（秒）
     
     Returns:
-        格式化后的字符串
+        格式化后的字符串（*时*分*秒）
     """
-    return f"{seconds / 3600:.2f}小时"
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    
+    return f"{hours}时{minutes}分{secs}秒"
 
 
 # ============================================================================
@@ -227,9 +231,9 @@ def print_report(data, start_date, end_date, sys_user_id=None):
     print()
     
     # 打印表格
-    print("=" * 100)
-    print(f"{'客服昵称':<30} {'ID':<10} {'登录时长':<15} {'在线时长':<15} {'忙碌时长':<15} {'离线时长':<15}")
-    print("-" * 100)
+    print("=" * 140)
+    print(f"{'客服昵称':<30} {'ID':<10} {'登录时长':<20} {'在线时长':<20} {'忙碌时长':<20} {'离线时长':<20}")
+    print("-" * 140)
     
     # 统计总计
     total_login = 0
@@ -245,9 +249,9 @@ def print_report(data, start_date, end_date, sys_user_id=None):
         busy_duration = item.get('busy_duration', 0)
         offline_duration = item.get('offline_duration', 0)
         
-        print(f"{nickname:<30} {uid:<10} {format_duration_hours(login_duration):<15} "
-              f"{format_duration_hours(online_duration):<15} {format_duration_hours(busy_duration):<15} "
-              f"{format_duration_hours(offline_duration):<15}")
+        print(f"{nickname:<30} {uid:<10} {format_duration_hours(login_duration):<20} "
+              f"{format_duration_hours(online_duration):<20} {format_duration_hours(busy_duration):<20} "
+              f"{format_duration_hours(offline_duration):<20}")
         
         total_login += login_duration
         total_online += online_duration
@@ -255,11 +259,11 @@ def print_report(data, start_date, end_date, sys_user_id=None):
         total_offline += offline_duration
     
     # 打印总计
-    print("-" * 100)
-    print(f"{'总计':<30} {'':<10} {format_duration_hours(total_login):<15} "
-          f"{format_duration_hours(total_online):<15} {format_duration_hours(total_busy):<15} "
-          f"{format_duration_hours(total_offline):<15}")
-    print("=" * 100)
+    print("-" * 140)
+    print(f"{'总计':<30} {'':<10} {format_duration_hours(total_login):<20} "
+          f"{format_duration_hours(total_online):<20} {format_duration_hours(total_busy):<20} "
+          f"{format_duration_hours(total_offline):<20}")
+    print("=" * 140)
     
     # 打印详细时长（秒）
     print(f"\n📝 详细数据（秒）:")
