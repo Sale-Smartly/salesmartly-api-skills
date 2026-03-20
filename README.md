@@ -1,6 +1,6 @@
 # SaleSmartly API Skills
 
-> 🤖 SaleSmartly 全功能 API 自动化脚本系统 | 24 个核心脚本 | 100% API 覆盖
+> 🤖 SaleSmartly 全功能 API 自动化脚本系统 | 21 个核心脚本 | 100% API 覆盖
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -67,15 +67,46 @@ AI 会自动克隆项目并安装到 `skills/salesmartly-api-skills/` 目录。
 
 完整脚本列表见 `scripts/` 目录：
 
+### 客户管理
 - `query-customers.py` - 客户查询
-- `query-members.py` - 团队成员查询
+- `create-customer.py` - 创建客户
+- `update-customer.py` - 更新客户
+- `batch-tags.py` - 批量打标签
+- `import-orders.py` - 导入订单
+- `customer-stats.py` - 客户统计分析
+
+### 会话管理
+- `query-sessions.py` - 会话列表查询
 - `query-messages.py` - 聊天记录查询
+- `query-all-messages.py` - 完整聊天记录查询
+- `assign-session.py` - 分配会话
+- `end-session.py` - 结束会话
+- `member-session-stats.py` - 客服会话统计
+- `online-duration-report.py` - 在线时长报表 ⭐ NEW
+
+### 团队管理
+- `query-members.py` - 团队成员查询
+
+### 营销管理
 - `query-links.py` - 分流链接查询
+- `query-link-records.py` - 链接记录查询
+
+### WhatsApp 管理
 - `query-whatsapp-apps.py` - WhatsApp 设备查询
 - `add-whatsapp-device.py` - 新增 WhatsApp 设备
+- `delete-whatsapp-device.py` - 删除设备
+- `get-whatsapp-qrcode.py` - 获取二维码
+- `set-whatsapp-proxy.py` - 设置代理
+
+### 报表与反馈
 - `daily-sales-report.py` - 每日销售报告
-- `customer-stats.py` - 客户统计分析
-- ... (共 24 个脚本)
+- `daily-feedback-report.py` - 每日反馈报告
+- `check-customer-feedback.py` - 客户反馈检查
+
+### 开发工具
+- `check-api-updates.py` - 检查 API 更新
+- `generate-query-script.py` - 生成查询脚本
+- `batch-generate-scripts.py` - 批量生成脚本
 
 ---
 
