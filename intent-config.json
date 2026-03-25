@@ -1,0 +1,70 @@
+{
+  "intent_recognition": {
+    "version": "2.0.0",
+    "mode": "progressive",
+    
+    "progressive_config": {
+      "phase": 1,
+      "phases": {
+        "1": {
+          "name": "部署增强版代码",
+          "llm_enabled": false,
+          "keyword_fallback": true,
+          "traffic_percentage": 0,
+          "description": "新功能代码就绪但不启用，仅使用关键词匹配"
+        },
+        "2": {
+          "name": "小流量测试",
+          "llm_enabled": true,
+          "keyword_fallback": true,
+          "traffic_percentage": 10,
+          "description": "10% 流量走新版意图识别，监控准确率"
+        },
+        "3": {
+          "name": "中等流量验证",
+          "llm_enabled": true,
+          "keyword_fallback": true,
+          "traffic_percentage": 50,
+          "description": "50% 流量切换，验证稳定性"
+        },
+        "4": {
+          "name": "完全迁移",
+          "llm_enabled": true,
+          "keyword_fallback": false,
+          "traffic_percentage": 100,
+          "description": "100% 切换，删除旧代码"
+        }
+      }
+    },
+    
+    "model_adaptive": {
+      "enabled": true,
+      "model_profiles": {
+        "qwen3.5-plus": "L1",
+        "qwen3.5-flash": "L2",
+        "qwen2.5-72b": "L2",
+        "gpt-3.5-turbo": "L3",
+        "default": "L2"
+      }
+    },
+    
+    "keyword_matching": {
+      "enabled": true,
+      "confidence_threshold": 0.85,
+      "fallback_to_llm": true
+    },
+    
+    "llm_config": {
+      "enabled": false,
+      "confidence_threshold": 0.7,
+      "require_reasoning": false,
+      "max_retries": 1
+    },
+    
+    "logging": {
+      "enabled": true,
+      "log_all_requests": true,
+      "log_file": "intent_recognition.log"
+    }
+  }
+}

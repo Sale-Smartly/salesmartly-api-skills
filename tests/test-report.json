@@ -1,0 +1,486 @@
+{
+  "total": 30,
+  "correct": 25,
+  "accuracy": 0.8333333333333334,
+  "by_difficulty": {
+    "easy": {
+      "total": 18,
+      "correct": 15,
+      "accuracy": 0.8333333333333334
+    },
+    "medium": {
+      "total": 9,
+      "correct": 8,
+      "accuracy": 0.8888888888888888
+    },
+    "hard": {
+      "total": 3,
+      "correct": 2,
+      "accuracy": 0.6666666666666666
+    }
+  },
+  "errors": [
+    {
+      "message": "最近 7 天新增客户",
+      "expected_intent": "query-customers",
+      "predicted_intent": "customer-stats",
+      "intent_correct": false,
+      "expected_params": {
+        "days": 7
+      },
+      "predicted_params": {
+        "days": 7
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "通知所有 VIP 客户",
+      "expected_intent": "send-message",
+      "predicted_intent": "query-customers",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {
+        "tags": "VIP"
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "hard"
+    },
+    {
+      "message": "看看聊天记录",
+      "expected_intent": "query-messages",
+      "predicted_intent": "get-customer-history",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "结束这个会话",
+      "expected_intent": "end-session",
+      "predicted_intent": null,
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.0,
+      "method": "none",
+      "difficulty": "easy"
+    },
+    {
+      "message": "销售统计",
+      "expected_intent": "member-session-stats",
+      "predicted_intent": "daily-sales-report",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    }
+  ],
+  "results": [
+    {
+      "message": "查一下昨天的销售数据",
+      "expected_intent": "daily-sales-report",
+      "predicted_intent": "daily-sales-report",
+      "intent_correct": true,
+      "expected_params": {
+        "days": 1
+      },
+      "predicted_params": {
+        "days": 1
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "今天卖得怎么样",
+      "expected_intent": "daily-sales-report",
+      "predicted_intent": "daily-sales-report",
+      "intent_correct": true,
+      "expected_params": {
+        "days": 0
+      },
+      "predicted_params": {
+        "days": 0
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "最近 7 天的销售额",
+      "expected_intent": "daily-sales-report",
+      "predicted_intent": "daily-sales-report",
+      "intent_correct": true,
+      "expected_params": {
+        "days": 7
+      },
+      "predicted_params": {
+        "days": 7
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "有哪些客户",
+      "expected_intent": "query-customers",
+      "predicted_intent": "query-customers",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "VIP 客户有哪些",
+      "expected_intent": "query-customers",
+      "predicted_intent": "query-customers",
+      "intent_correct": true,
+      "expected_params": {
+        "tags": "VIP"
+      },
+      "predicted_params": {
+        "tags": "VIP"
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "最近 7 天新增客户",
+      "expected_intent": "query-customers",
+      "predicted_intent": "customer-stats",
+      "intent_correct": false,
+      "expected_params": {
+        "days": 7
+      },
+      "predicted_params": {
+        "days": 7
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "查客户 abc123 的信息",
+      "expected_intent": "query-customers",
+      "predicted_intent": "query-customers",
+      "intent_correct": true,
+      "expected_params": {
+        "chat_user_id": "abc123"
+      },
+      "predicted_params": {
+        "chat_user_id": "abc123"
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "给张三发消息",
+      "expected_intent": "send-message",
+      "predicted_intent": "send-message",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "通知所有 VIP 客户",
+      "expected_intent": "send-message",
+      "predicted_intent": "query-customers",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {
+        "tags": "VIP"
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "hard"
+    },
+    {
+      "message": "看看聊天记录",
+      "expected_intent": "query-messages",
+      "predicted_intent": "get-customer-history",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "查昨天的聊天",
+      "expected_intent": "query-all-messages",
+      "predicted_intent": "query-all-messages",
+      "intent_correct": true,
+      "expected_params": {
+        "days": 1
+      },
+      "predicted_params": {
+        "days": 1
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "把这个客户给小王",
+      "expected_intent": "assign-session",
+      "predicted_intent": "assign-session",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "批量分配客户",
+      "expected_intent": "batch-assign-session",
+      "predicted_intent": "batch-assign-session",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "批量回聊客户",
+      "expected_intent": "batch-talk-back",
+      "predicted_intent": "batch-talk-back",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "查客户详细信息",
+      "expected_intent": "get-customer-history",
+      "predicted_intent": "get-customer-history",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "查张三的聊天记录",
+      "expected_intent": "get-customer-history",
+      "predicted_intent": "get-customer-history",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "WhatsApp 设备",
+      "expected_intent": "query-whatsapp-apps",
+      "predicted_intent": "query-whatsapp-apps",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "添加 WhatsApp",
+      "expected_intent": "add-whatsapp-device",
+      "predicted_intent": "add-whatsapp-device",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "删除 WhatsApp 设备",
+      "expected_intent": "delete-whatsapp-device",
+      "predicted_intent": "delete-whatsapp-device",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "客户反馈",
+      "expected_intent": "check-customer-feedback",
+      "predicted_intent": "check-customer-feedback",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "最近 7 天的客户反馈怎么样",
+      "expected_intent": "check-customer-feedback",
+      "predicted_intent": "check-customer-feedback",
+      "intent_correct": true,
+      "expected_params": {
+        "days": 7
+      },
+      "predicted_params": {
+        "days": 7
+      },
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "待跟进客户",
+      "expected_intent": "find-followup-customers",
+      "predicted_intent": "find-followup-customers",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "有哪些客户需要跟进",
+      "expected_intent": "find-followup-customers",
+      "predicted_intent": "find-followup-customers",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "结束这个会话",
+      "expected_intent": "end-session",
+      "predicted_intent": null,
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.0,
+      "method": "none",
+      "difficulty": "easy"
+    },
+    {
+      "message": "成员统计",
+      "expected_intent": "member-session-stats",
+      "predicted_intent": "member-session-stats",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "销售统计",
+      "expected_intent": "member-session-stats",
+      "predicted_intent": "daily-sales-report",
+      "intent_correct": false,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "在线时长",
+      "expected_intent": "online-duration-report",
+      "predicted_intent": "online-duration-report",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "easy"
+    },
+    {
+      "message": "查一下工作时长",
+      "expected_intent": "online-duration-report",
+      "predicted_intent": "online-duration-report",
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.85,
+      "method": "keyword",
+      "difficulty": "medium"
+    },
+    {
+      "message": "我想看看数据",
+      "expected_intent": null,
+      "predicted_intent": null,
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.0,
+      "method": "none",
+      "difficulty": "hard"
+    },
+    {
+      "message": "帮我处理一下",
+      "expected_intent": null,
+      "predicted_intent": null,
+      "intent_correct": true,
+      "expected_params": {},
+      "predicted_params": {},
+      "params_correct": true,
+      "confidence": 0.0,
+      "method": "none",
+      "difficulty": "hard"
+    }
+  ]
+}
