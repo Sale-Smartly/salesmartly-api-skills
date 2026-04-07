@@ -1,3 +1,6 @@
+# Aura 升级日志（本地记录，不提交）
+.logs/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -14,6 +17,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!scripts/lib/
 lib64/
 parts/
 sdist/

@@ -7,110 +7,55 @@ SaleSmartly 客户跟进查找
 Usage:
     uv run scripts/find-followup-customers.py --days 7 --limit 20
     uv run scripts/find-followup-customers.py --days 3 --dingtalk  # 推送到钉钉
+
+@safety: safe
+@retryable: true
+@category: customer
+@operation: query
 """
-
 import sys
-import json
-import hashlib
 import argparse
-import urllib.request
-import urllib.parse
-import ssl
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+from lib import load_config, SaleSmartlyClient, add_output_args, print_result, format_timestamp, ConfigError, APIError, NetworkError
+
+import json
 from datetime import datetime, timedelta
-import requests
-
-# 配置文件
-CONFIG_FILE = "api-key.json"
-API_BASE_URL = "https://developer.salesmartly.com"
 
 
-def load_config():
-    """加载配置文件"""
-    try:
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            # 支持新旧两种配置格式
-            if 'salesmartly' in config:
-                api_key = config['salesmartly'].get('apiKey')
-                project_id = config['salesmartly'].get('projectId')
-                dingtalk_webhook = config.get('dingtalk', {}).get('webhook')
-            else:
-                api_key = config.get('apiKey')
-                project_id = config.get('projectId')
-                dingtalk_webhook = config.get('dingtalk', {}).get('webhook')
-            return api_key, project_id, dingtalk_webhook
-    except Exception as e:
-        print(f"❌ 读取配置文件失败：{e}")
-        sys.exit(1)
-
-
-def generate_sign(api_key: str, params: dict) -> str:
-    """生成 SaleSmartly API 签名（MD5）"""
-    sorted_params = sorted(params.items(), key=lambda x: x[0])
-    sign_parts = [api_key]
-    for k, v in sorted_params:
-        sign_parts.append(f"{k}={v}")
-    sign_str = "&".join(sign_parts)
-    return hashlib.md5(sign_str.encode()).hexdigest()
-
-
-def get_all_customers(api_key, project_id, days=365):
+def get_all_customers(client, days=365):
     """获取所有客户数据"""
-    all_customers = []
     end_time = int(datetime.now().timestamp())
     start_time = int((datetime.now() - timedelta(days=days)).timestamp())
-    
+
     print(f"📥 正在获取客户数据（最近 {days} 天）...")
-    
+
+    updated_time_str = json.dumps({"start": start_time, "end": end_time})
+    all_customers = []
+
     for page in range(1, 20):  # 最多查 20 页
-        updated_time_str = json.dumps({"start": start_time, "end": end_time})
         params = {
-            "project_id": project_id,
             "updated_time": updated_time_str,
             "page": str(page),
             "page_size": "100"
         }
-        
-        sign = generate_sign(api_key, params)
-        
-        query_params = {
-            "project_id": project_id,
-            "updated_time": urllib.parse.quote(updated_time_str),
-            "page": str(page),
-            "page_size": "100"
-        }
-        query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
-        url = f"{API_BASE_URL}/api/v2/get-contact-list?{query_string}"
-        
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "SaleSmartly-Agent/1.0",
-            "External-Sign": sign
-        }
-        
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = True
-        ssl_context.verify_mode = ssl.CERT_REQUIRED
-        
+
         try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
-                resp_json = json.loads(response.read().decode('utf-8'))
-            
-            customers = resp_json.get('data', {}).get('list', [])
-            if not customers:
-                break
-            
-            print(f"  第 {page} 页：{len(customers)} 条")
-            all_customers.extend(customers)
-            
-            if len(customers) < 100:
-                break
-                
-        except Exception as e:
+            data = client.get('/api/v2/get-contact-list', params)
+        except (APIError, NetworkError) as e:
             print(f"❌ 请求失败：{e}")
             break
-    
+
+        customers = data.get('list', [])
+        if not customers:
+            break
+
+        print(f"  第 {page} 页：{len(customers)} 条")
+        all_customers.extend(customers)
+
+        if len(customers) < 100:
+            break
+
     # 去重
     seen = set()
     unique_customers = []
@@ -119,52 +64,26 @@ def get_all_customers(api_key, project_id, days=365):
         if uid not in seen:
             seen.add(uid)
             unique_customers.append(c)
-    
+
     print(f"✅ 获取到 {len(unique_customers)} 个唯一客户\n")
     return unique_customers
 
 
-def get_last_message_time(api_key, project_id, chat_user_id, days=60):
+def get_last_message_time(client, chat_user_id, days=60):
     """获取与某个客户的最后联系时间"""
     end_time = int(datetime.now().timestamp())
     start_time = int((datetime.now() - timedelta(days=days)).timestamp())
-    
+
     params = {
-        "project_id": project_id,
         "chat_user_id": chat_user_id,
         "page_size": "1",  # 只查最新 1 条
         "updated_time": json.dumps({"start": start_time, "end": end_time})
     }
-    
-    sign = generate_sign(api_key, params)
-    
-    query_params = {
-        "project_id": project_id,
-        "chat_user_id": chat_user_id,
-        "page_size": "1",
-        "updated_time": urllib.parse.quote(params['updated_time'])
-    }
-    query_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
-    url = f"{API_BASE_URL}/api/v2/get-message-list?{query_string}"
-    
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "SaleSmartly-Agent/1.0",
-        "External-Sign": sign
-    }
-    
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = True
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
-    
+
     try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
-            resp_json = json.loads(response.read().decode('utf-8'))
-        
-        messages = resp_json.get('data', {}).get('list', [])
+        data = client.get('/api/v2/get-message-list', params)
+        messages = data.get('list', [])
         if messages:
-            # 返回最新的消息时间
             last_msg = messages[0]
             send_time = last_msg.get('send_time', 0)
             # 13 位毫秒转秒
@@ -172,91 +91,88 @@ def get_last_message_time(api_key, project_id, chat_user_id, days=60):
                 send_time = send_time // 1000
             return send_time
         return 0
-        
-    except Exception as e:
+    except (APIError, NetworkError):
         return 0
 
 
-def send_dingtalk_notification(followup_list, days, webhook):
+def send_dingtalk_notification(client, followup_list, days, webhook):
     """发送钉钉通知"""
     if not followup_list:
         return
-    
+
     if not webhook:
         print("⚠️ 钉钉 Webhook 未配置，请在 api-key.json 中添加 dingtalk.webhook")
         return
-    
+
     # 构建消息
     title = f"📋 待跟进客户提醒（{days} 天未联系）"
     content = [title, ""]
-    
+
     for i, customer in enumerate(followup_list[:10], 1):  # 最多显示 10 个
         days_ago = customer['days_since_contact']
         name = customer.get('name', '未知')
         phone = customer.get('phone', '')
-        
+
         content.append(f"{i}. {name} - {days_ago}天未联系")
         if phone:
             content[-1] += f" ({phone})"
-    
+
     if len(followup_list) > 10:
         content.append(f"\n... 还有 {len(followup_list) - 10} 个客户")
-    
+
     content.append(f"\n总计：**{len(followup_list)}** 个客户需要跟进")
-    
+
     message = "\n".join(content)
-    
-    data = {
+
+    payload = {
         "msgtype": "text",
         "text": {
             "content": message
         }
     }
-    
+
     try:
-        resp = requests.post(webhook, json=data, timeout=10)
-        result = resp.json()
+        result = client.post_webhook(webhook, payload)
         if result.get('errcode') == 0:
             print(f"✅ 钉钉通知已发送")
         else:
             print(f"⚠️ 钉钉发送失败：{result.get('errmsg')}")
-    except Exception as e:
+    except NetworkError as e:
         print(f"⚠️ 钉钉发送失败：{e}")
 
 
-def find_followup_customers(days: int = 7, limit: int = 20, dingtalk: bool = False):
+def find_followup_customers(client, config, days=7, limit=20, dingtalk=False, json_mode=False, quiet=False):
     """
     找出需要跟进的客户
-    
+
     Args:
+        client: SaleSmartlyClient instance
+        config: Config instance
         days: N 天未联系
         limit: 最多返回多少个
         dingtalk: 是否发送到钉钉
+        json_mode: JSON 输出模式
+        quiet: 安静模式
     """
-    api_key, project_id, dingtalk_webhook = load_config()
-    
-    if not api_key or not project_id:
-        print("❌ 配置错误：缺少 API Key 或 Project ID")
-        sys.exit(1)
-    
-    print(f"\n🔍 查找 {days} 天未联系的客户...\n")
-    
+    if not quiet and not json_mode:
+        print(f"\n🔍 查找 {days} 天未联系的客户...\n")
+
     # 1. 获取所有客户
-    customers = get_all_customers(api_key, project_id, days=365)
-    
+    customers = get_all_customers(client, days=365)
+
     # 2. 检查每个客户的最后联系时间
     followup_list = []
     now = datetime.now().timestamp()
-    
-    print(f"📊 正在分析客户联系情况...\n")
-    
+
+    if not quiet and not json_mode:
+        print(f"📊 正在分析客户联系情况...\n")
+
     for i, customer in enumerate(customers, 1):
         chat_user_id = customer.get('chat_user_id')
-        name = customer.get('name', '未知')
-        
+
         # 获取最后联系时间
-        last_contact = get_last_message_time(api_key, project_id, chat_user_id, days=60)
-        
+        last_contact = get_last_message_time(client, chat_user_id, days=60)
+
         # 计算多少天未联系
         if last_contact > 0:
             days_since = (now - last_contact) / 86400  # 转换为天数
@@ -267,7 +183,7 @@ def find_followup_customers(days: int = 7, limit: int = 20, dingtalk: bool = Fal
                 days_since = (now - created_time) / 86400
             else:
                 days_since = 999  # 未知时间，视为很久未联系
-        
+
         # 如果超过 N 天未联系，加入待跟进列表
         if days_since >= days:
             followup_list.append({
@@ -275,29 +191,43 @@ def find_followup_customers(days: int = 7, limit: int = 20, dingtalk: bool = Fal
                 'days_since_contact': int(days_since),
                 'last_contact_time': last_contact
             })
-        
+
         # 进度显示
-        if i % 10 == 0:
+        if not quiet and not json_mode and i % 10 == 0:
             print(f"  已检查 {i}/{len(customers)} 个客户，待跟进：{len(followup_list)}")
-    
+
     # 3. 排序（按未联系天数降序）
     followup_list.sort(key=lambda x: x['days_since_contact'], reverse=True)
-    
+
     # 4. 限制数量
     followup_list = followup_list[:limit]
-    
+
+    # 5. JSON 输出
+    if json_mode:
+        print_result(True, data=[{
+            'chat_user_id': c.get('chat_user_id'),
+            'name': c.get('name', '未知'),
+            'phone': c.get('phone', ''),
+            'email': c.get('email', ''),
+            'days_since_contact': c['days_since_contact'],
+        } for c in followup_list], meta={
+            'days_threshold': days,
+            'total_found': len(followup_list),
+        }, json_mode=True)
+        return followup_list
+
     # 5. 输出结果
     print(f"\n{'='*70}")
     print(f"✅ 找到 {len(followup_list)} 个需要跟进的客户")
     print(f"{'='*70}\n")
-    
+
     if followup_list:
         for i, c in enumerate(followup_list, 1):
             days_ago = c['days_since_contact']
             name = c.get('name', '未知')
             phone = c.get('phone', '')
             email = c.get('email', '')
-            
+
             print(f"[{i}] {name}")
             print(f"    ⏰ {days_ago} 天未联系")
             if phone:
@@ -309,16 +239,16 @@ def find_followup_customers(days: int = 7, limit: int = 20, dingtalk: bool = Fal
             print()
     else:
         print("🎉 太棒了！所有客户都在近期联系过！\n")
-    
+
     # 6. 发送到钉钉（只有用户明确要求才发送）
     if dingtalk and followup_list:
         print(f"\n📤 正在发送钉钉通知...")
-        send_dingtalk_notification(followup_list, days, dingtalk_webhook)
+        send_dingtalk_notification(client, followup_list, days, config.dingtalk_webhook)
     elif dingtalk and not followup_list:
         print(f"\n⚠️  没有待跟进客户，跳过钉钉通知")
-    
+
     print(f"{'='*70}")
-    
+
     return followup_list
 
 
@@ -327,13 +257,25 @@ def main():
     parser.add_argument('--days', type=int, default=7, help='N 天未联系（默认 7 天）')
     parser.add_argument('--limit', type=int, default=20, help='最多返回多少个（默认 20）')
     parser.add_argument('--dingtalk', action='store_true', help='发送到钉钉群')
-    
+    add_output_args(parser)
+
     args = parser.parse_args()
-    
+
+    try:
+        config = load_config(args.config)
+        client = SaleSmartlyClient(config, timeout=30)
+    except ConfigError as e:
+        print_result(False, error_msg=str(e), json_mode=args.json)
+        sys.exit(1)
+
     find_followup_customers(
+        client=client,
+        config=config,
         days=args.days,
         limit=args.limit,
-        dingtalk=args.dingtalk
+        dingtalk=args.dingtalk,
+        json_mode=args.json,
+        quiet=args.quiet,
     )
 
 

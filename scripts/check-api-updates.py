@@ -6,21 +6,29 @@ SaleSmartly API 脚本更新检查器
 
 用法:
     uv run scripts/check-api-updates.py
-"""
 
+@safety: safe
+@retryable: true
+@category: utility
+@operation: query
+"""
 import sys
+import argparse
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+from lib import load_config, SaleSmartlyClient, add_output_args, print_result, format_timestamp, ConfigError, APIError, NetworkError
+
 import json
 import urllib.request
 import urllib.parse
 import ssl
 import re
-from pathlib import Path
 from datetime import datetime
 
 # 配置
 APIFOX_BASE = "https://salesmartly-api.apifox.cn"
 LLMS_URL = f"{APIFOX_BASE}/llms.txt"
-SCRIPTS_DIR = Path("scripts")
+SCRIPTS_DIR = Path(__file__).parent
 
 # API ID 到脚本文件的映射
 API_TO_SCRIPT = {
@@ -49,7 +57,7 @@ def fetch_llms() -> list:
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = True
     ssl_context.verify_mode = ssl.CERT_REQUIRED
-    
+
     try:
         req = urllib.request.Request(LLMS_URL, headers={"User-Agent": "SaleSmartly-Agent/1.0"})
         with urllib.request.urlopen(req, timeout=30, context=ssl_context) as response:
@@ -65,15 +73,15 @@ def parse_llms(content: str) -> list:
     apis = []
     pattern = r'-\s*([^\[]+)\s*\[([^\]]+)\]\(([^)]+)\)'
     matches = re.findall(pattern, content)
-    
+
     for match in matches:
         category = match[0].strip()
         name = match[1].strip()
         url = match[2].strip()
-        
+
         if 'Docs' in category or not url.endswith('.md'):
             continue
-        
+
         api_id_match = re.search(r'(\w+e\d+)\.md', url)
         if api_id_match:
             api_id = api_id_match.group(1)
@@ -83,7 +91,7 @@ def parse_llms(content: str) -> list:
                 'api_id': api_id,
                 'url': url
             })
-    
+
     return apis
 
 
@@ -98,22 +106,22 @@ def get_script_info(script_path: Path) -> dict:
     """获取脚本信息"""
     if not script_path.exists():
         return None
-    
+
     with open(script_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    
+
     # 提取 API ID
     api_id_match = re.search(r'API ID:\s*(\w+e\d+)', content)
     api_id = api_id_match.group(1) if api_id_match else 'unknown'
-    
+
     # 提取 API 路径
     path_match = re.search(r'Endpoint:\s*(/[^\s]+)', content)
     path = path_match.group(1) if path_match else 'unknown'
-    
+
     # 提取方法
     method_match = re.search(r'Method:\s*(GET|POST|PUT|DELETE)', content)
     method = method_match.group(1) if method_match else 'unknown'
-    
+
     return {
         'api_id': api_id,
         'path': path,
@@ -124,25 +132,31 @@ def get_script_info(script_path: Path) -> dict:
 
 
 def main():
-    print("="*70)
-    print("📊 SaleSmartly API 脚本更新检查")
-    print("="*70)
-    print()
-    
+    parser = argparse.ArgumentParser(description='SaleSmartly API 脚本更新检查器')
+    add_output_args(parser)
+    args = parser.parse_args()
+
+    if not args.quiet and not args.json:
+        print("=" * 70)
+        print("📊 SaleSmartly API 脚本更新检查")
+        print("=" * 70)
+        print()
+
     # 获取最新 API 列表
-    print("📄 获取最新 API 列表...")
+    if not args.quiet and not args.json:
+        print("📄 获取最新 API 列表...")
     apis = fetch_llms()
-    print(f"✅ 找到 {len(apis)} 个 API\n")
-    
+    if not args.quiet and not args.json:
+        print(f"✅ 找到 {len(apis)} 个 API\n")
+
     # 分类统计
     implemented = []
     missing = []
-    updated = []
-    
+
     for api in apis:
         api_id = api['api_id']
         script_name = API_TO_SCRIPT.get(api_id)
-        
+
         if script_name:
             script_path = SCRIPTS_DIR / script_name
             if script_path.exists():
@@ -159,13 +173,24 @@ def main():
                 missing.append(api)
         else:
             missing.append(api)
-    
+
+    # JSON 输出
+    if args.json:
+        print_result(True, data={
+            'total_apis': len(apis),
+            'implemented': len(implemented),
+            'missing': len(missing),
+            'implemented_list': [{'name': i['api']['name'], 'script': i['script']} for i in implemented],
+            'missing_list': [{'name': m['name'], 'api_id': m['api_id']} for m in missing],
+        }, json_mode=True)
+        return
+
     # 显示结果
-    print("="*70)
+    print("=" * 70)
     print("📋 检查结果")
-    print("="*70)
+    print("=" * 70)
     print()
-    
+
     # 已实现
     print(f"✅ 已实现：{len(implemented)}/{len(apis)}")
     for item in implemented:
@@ -175,7 +200,7 @@ def main():
         print(f"     脚本：{item['script']} ({info['size']} bytes)")
         print(f"     API: {info['path']} [{info['method']}]")
         print()
-    
+
     # 缺失的
     if missing:
         print(f"⚠️  未实现：{len(missing)}")
@@ -184,16 +209,16 @@ def main():
             print(f"     API ID: {api['api_id']}")
             print(f"     命令：uv run scripts/generate-query-script.py --api-id {api['api_id']}")
             print()
-    
+
     # 总结
-    print("="*70)
+    print("=" * 70)
     print("📊 总结")
-    print("="*70)
+    print("=" * 70)
     print(f"API 总数：{len(apis)}")
-    print(f"已实现：{len(implemented)} ({len(implemented)*100//len(apis)}%)")
+    print(f"已实现：{len(implemented)} ({len(implemented)*100//len(apis) if apis else 0}%)")
     print(f"未实现：{len(missing)}")
     print()
-    
+
     if missing:
         print("💡 建议操作:")
         print(f"   1. 一键生成所有缺失脚本:")
@@ -204,8 +229,8 @@ def main():
         print()
     else:
         print("✅ 所有 API 脚本已实现！")
-    
-    print("="*70)
+
+    print("=" * 70)
 
 
 if __name__ == "__main__":
